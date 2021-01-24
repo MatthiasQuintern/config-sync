@@ -1,0 +1,50 @@
+# contains all aliases, to be loaded by bash/zsh
+
+# Für ssh/gpg
+export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+gpgconf --launch gpg-agent
+
+# Für yay:
+export VISUAL='nano'
+
+
+
+# ls-aliase
+alias ls='ls --color=auto'
+alias l='ls -lAh --color=auto'
+alias lscripts='ls ~/.scripts'
+
+# cd aliase
+alias cdd='cd ~/Downloads'
+alias cdp='cd ~/Python_Projekte'
+alias cdgzpe='cd ~/Python_Projekte/Glowzwiebel_Physics_Engine'
+
+# ffmpeg converters (dahinter Dateiendung der ursprungsdatei angeben!)
+alias gzflac='sh ~/.scripts/flac_convert.sh'
+alias gzmp3='sh ~/.scripts/mp3_convert.sh'
+
+# Start-aliase
+alias nv='nvidia-settings --load-config-only'
+alias vcam='sudo modprobe v4l2loopback && ls /dev |grep video'
+
+# history aliase
+alias h='history'
+alias hgrep='fc -El 0 | grep'
+
+# edit aliase
+alias brc='nano ~/.bashrc && source ~/.bashrc'
+alias zrc='vim ~/.zshrc && source ~/.zshrc'
+alias alrc='vim ~/.aliasrc'
+
+# Sonstige aliase
+alias please='sudo'
+alias hack='python3 ~/Python_Projekte/starthack.py'
+alias p='python3'
+alias supac='sudo pacman -S'
+alias qrcode='qrencode -o ~/Bilder/QR_Codes/bash_qr_code.png --foreground=68228b --background=ffffff'
+alias lightshow='java -jar ~/Python_Projekte/LightShow.jar'
+alias gay='toilet -f mono9 -F border -w 132 --gay'
+alias biggay='toilet -f bigmono9 -F border -w 132 --gay'
+alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
+alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
+
