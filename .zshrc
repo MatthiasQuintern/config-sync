@@ -1,10 +1,10 @@
 #!/bin/zsh
 # comments
-# lynx - Browser
-# qrencode - QRCodes
-# htop - task manager
-# ripit rip audio dc: -c 1 -> lame, 2 -> flac, -o Output path
-# cmatrix
+	# lynx - Browser
+	# qrencode - QRCodes
+	# htop - task manager
+	# ripit rip audio dc: -c 1 -> lame, 2 -> flac, -o Output path
+	# cmatrix
 
 # Prompt
 # PS1="%{%F{red}%}%n%{%f%}@%{%F{blue}%}%m %{%F{yellow}%}%~ %{$%f%} "
