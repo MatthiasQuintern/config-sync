@@ -19,6 +19,9 @@ alias cdd='cd ~/Downloads'
 alias cdp='cd ~/Python_Projekte'
 alias cdgzpe='cd ~/Python_Projekte/Glowzwiebel_Physics_Engine'
 
+# start ranger
+alias r='ranger .'
+
 # skript menü
 alias s='sh ~/.scripts/script-menu.sh'
 
