@@ -1,12 +1,11 @@
-# contains all aliases, to be loaded by bash/zsh
-# Matthias
+# contains all aliases, to be loaded by bash/zsh Matthias
 # 
 # Für ssh/gpg
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 gpgconf --launch gpg-agent
 
 # Für yay:
-export VISUAL='nano'
+export VISUAL='vim'
 
 
 
@@ -19,6 +18,9 @@ alias lscripts='ls ~/.scripts'
 alias cdd='cd ~/Downloads'
 alias cdp='cd ~/Python_Projekte'
 alias cdgzpe='cd ~/Python_Projekte/Glowzwiebel_Physics_Engine'
+
+# skript menü
+alias s='sh ~/.scripts/script-menu.sh'
 
 # ffmpeg converters (dahinter Dateiendung der ursprungsdatei angeben!)
 alias gzflac='sh ~/.scripts/flac_convert.sh'
@@ -48,4 +50,4 @@ alias gay='toilet -f mono9 -F border -w 132 --gay'
 alias biggay='toilet -f bigmono9 -F border -w 132 --gay'
 alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
 alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
-
+alias redyt='sh ~/.scripts/redyt.sh'

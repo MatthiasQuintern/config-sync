@@ -14,4 +14,7 @@ echo "Kopiere Dateien ins Home Verzeichnis"
     shopt -s dotglob
     cp -R * ~/
 
+    # alle skripte ausführbar machen
+    chmod +x ~/.scripts/*
+
 echo "Fertig!"
