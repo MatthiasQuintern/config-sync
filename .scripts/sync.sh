@@ -5,7 +5,7 @@ target=$(printf "Website\nUni\nDotfiles" | dmenu -p "Was soll synchronisiert wer
 
 operation=$(printf "Push\nPull" | dmenu -p "Push oder Pull?")
 
-port_option=""
+port="22"
 
 # bestimme client und server
 case $target in
@@ -18,8 +18,8 @@ case $target in
         # wähle serverpfad
         case $website in
             "ge75yag")
-                server="ge75yag@mytum.de:/WWW/users/ge75yag/"
-                port_option="--port 222"
+                server="ge75yag@cipgate.ph.tum.de:/WWW/users/ge75yag/"
+                port="222"
                 ;;
             *)
                 server="matthias@quintern.xyz:/www/$website"
@@ -29,7 +29,7 @@ case $target in
 
 
     "Uni")
-        client="~/Uni/"
+        client="$HOME/Uni/"
         server="matthias@quintern.xyz:/home/matthias/Uni/" 
         ;;
 
@@ -50,10 +50,10 @@ esac
 # führt die kommandos aus, je nachdem ob gepushed oder gepulled wird
 case $operation in
     "Push")
-        rsync -a $port_option $client $server
+        rsync -av -e "ssh -p $port" $client $server
         ;;
     "Pull")
-        rsync -a $port_option $server $client 
+        rsync -av -e "ssh -p $port" $server $client
         ;;
 esac
 
