@@ -4,7 +4,7 @@ set tabstop=4 softtabstop=4
 set shiftwidth=4
 set expandtab 	" converts tabs to spaces
 set smartindent
-set nu 		" line numbers
+set number relativenumber " hybrid line numbers
 set nowrap              " do not break line
 set undodir=~/.vim/undodir 	" directory to store backups to undo
 set undofile			" one file per edited file
@@ -30,7 +30,7 @@ map <C-v> "+P
 map <leader>p :! pdflatex % && start %:r.pdf<CR>
 
 " normal mode with double i
-map <C-i> <Esc>
+inoremap jj <Esc>
 
 call plug#begin('~/.vim/plugged')
 

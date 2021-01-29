@@ -8,7 +8,6 @@ echo "Pull von Github"
     git pull --no-rebase origin master
 
 echo "Fertig!"
-
 echo "Kopiere Dateien ins Home Verzeichnis"
     # damit * auch versteckte Dateien findet
     shopt -s dotglob
