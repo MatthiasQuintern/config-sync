@@ -14,7 +14,7 @@ if [ -z $choice ]; then
     
 else
     # nicht mit cd, da die skripte dann nicht mehr das user-pwd verwenden
-    choice="~/.scripts/$choice"
+    choice="$HOME/.scripts/$choice"
     # echo "script-menu: run $choice" 
     # Richtiges programm zum öffnen bestimmen
 

@@ -13,11 +13,11 @@ case $target in
     "Website")
         # wähle website aus
         website=$(printf "ge75yag\nquintern\nglowzwiebel\ngabriel" | dmenu -p "Welche Website?")
-        client="~/Dokumente/Website/$website"
+        client="$HOME/Dokumente/Website/$website"
 
         # wähle serverpfad
         case $website in
-            "Pge75yag")
+            "ge75yag")
                 server="ge75yag@mytum.de:/WWW/users/ge75yag/"
                 port_option="--port 222"
                 ;;
@@ -33,11 +33,32 @@ case $target in
         server="matthias@quintern.xyz:/home/matthias/Uni/" 
         ;;
 
+    "Dotfiles")
+        # führt das pushrc oder pullrc skript aus
+        case $operation in
+            "Push")
+                sh "$HOME/.scripts/.hidden/pushrc.sh"
+                ;;
+            "Pull")
+                sh "$HOME/.scripts/.hidden/pullrc.sh"
+                ;;
+        esac
+        # beendet das skript da git benutzt wird und nicht rsync
+        exit 0
 esac
 
-echo "$target $operation $port_option"
+# führt die kommandos aus, je nachdem ob gepushed oder gepulled wird
+case $operation in
+    "Push")
+        rsync -a $port_option $client $server
+        ;;
+    "Pull")
+        rsync -a $port_option $server $client 
+        ;;
+esac
 
-# rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3
+
+
 
 
 
