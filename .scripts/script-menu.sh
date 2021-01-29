@@ -6,7 +6,7 @@ arg1="$1"
 arg2="$2"
 arg3="$3"
 
-choice=$(ls -A ~/.scripts | dmenu -p "Skript auswählen:")
+choice=$(ls $HOME/.scripts | dmenu -p "Skript auswählen:")
 
 # -z wenn der string leer ist
 if [ -z $choice ]; then
