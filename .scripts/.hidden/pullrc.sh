@@ -9,9 +9,10 @@ echo "Pull von Github"
 
 echo "Fertig!"
 echo "Kopiere Dateien ins Home Verzeichnis"
-    # damit * auch versteckte Dateien findet
-    shopt -s dotglob
-    cp -R * ~/
+    # dotglob damit * auch versteckte Dateien findet
+    # extglob damit alles gefunden wird ausser .git
+    shopt -s dotglob extglob
+    cp -R !(*git) ~/
 
     # alle skripte ausführbar machen
     chmod +x ~/.scripts/*
