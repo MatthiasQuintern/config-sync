@@ -20,10 +20,10 @@ alias cdp='cd ~/Python_Projekte'
 alias cdgzpe='cd ~/Python_Projekte/Glowzwiebel_Physics_Engine'
 
 # start ranger
-alias r='ranger .'
+alias ra='ranger .'
 
 # skript menü
-alias s='sh ~/.scripts/script-menu.sh'
+alias s='sh ~/.scripts/script-menu.sh'      # run shell-script menu
 
 # ffmpeg converters (dahinter Dateiendung der ursprungsdatei angeben!)
 alias gzflac='sh ~/.scripts/flac_convert.sh'
@@ -53,4 +53,5 @@ alias gay='toilet -f mono9 -F border -w 132 --gay'
 alias biggay='toilet -f bigmono9 -F border -w 132 --gay'
 alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
 alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
-alias redyt='sh ~/.scripts/redyt.sh'
+alias redyt='sh ~/.scripts/redyt.sh'            # browse reddit
+alias starwars='telnet towel.blinkenlights.nl'  # watch star wars

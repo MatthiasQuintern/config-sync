@@ -13,7 +13,7 @@ case $target in
     "Website")
         # wähle website aus
         website=$(printf "ge75yag\nquintern\nglowzwiebel\ngabriel" | dmenu -p "Welche Website?")
-        client="$HOME/Dokumente/Website/$website"
+        client="$HOME/Dokumente/Website/$website/"
 
         # wähle serverpfad
         case $website in
@@ -22,7 +22,7 @@ case $target in
                 port="222"
                 ;;
             *)
-                server="matthias@quintern.xyz:/www/$website"
+                server="matthias@quintern.xyz:/www/$website/"
                 ;;
         esac
         ;;
