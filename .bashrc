@@ -1,12 +1,7 @@
-#
+#!/bin/bash
 # ~/.bashrc
 #
-# comments
-# lynx - Browser
-# qrencode - QRCodes
-# htop - task manager
-# ripit rip audio dc: -c 1 -> lame, 2 -> flac, -o Output path
-# cmatrix
+
 
 # load aliases
 . ~/.aliasrc
