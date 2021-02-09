@@ -2,47 +2,52 @@
 # skript um in ordnern alle inhalte rekursiv mit gpg zu verschlüsseln
 
 shopt -s nullglob
+
 encrypt_folder() {
-for file in *
+
+    # echo "Verschlüssele Dateien in $PWD"
+    echo "Dateien in $PWD werden nach ${PWD/$origin_base/$origin_base"_encrypted"} verschlüsselt..."
+
+    # Verschlüssele alle Dateien 
+    ls -Ap | grep -v / | gpg --encrypt-files --recipient "matthiasqui2000@gmail.com" &&
+    
+    mv *.gpg "${PWD/$origin_base/$origin_base"_encrypted"}/"
+
+    # echo "Dateien in $PWD wurden nach ${PWD/$origin_base/$origin_base"_encrypted"} verschlüsselt"
+    
+    # rekursiver aufruf für alle ordner
+    find . -maxdepth 1 -mindepth 1 -type d | while read dir; 
     do
-        # prüft ob file ein ordner ist: wenn ja rekursiver aufruf von encrypt_folder
-        if [ -d $file ];
-        then
-            cd $file
-            encrypt_folder
-            cd ..
-        
-        # verschlüssle file mit dem key matthiasqui2000@gmail.com
-        else
-            echo "Verschlüssele $file"
-            gpg -e --recipient "matthiasqui2000@gmail.com" $file
-            rm $file 
-        fi
+        # Erstellt das Verzeichnis im "encrypted" Ordner
+        mkdir "${PWD/$origin_base/$origin_base"_encrypted"}/$dir"
+       
+        # echo "Betrete Ordner: $dir" 
+        cd "$dir"
+        # echo "Aktueller Pfad: $PWD"
+        encrypt_folder
+        cd ..
     done
-echo "Dateien wurden nach $crypt_dir verschlüsselt"
+    
 }
 
 decrypt_folder() {
-for file in *
+
+    echo "Entschlüssle Dateien in $PWD"
+    ls -A | grep .gpg | gpg --decrypt-files &&
+
+    [ $keep_enc == "j" ] && rm *.gpg
+
+    # echo "Dateien in $PWD wurden entschlüsselt"
+
+    for dir in $(ls -Ap | grep /)
     do
-        # prüft ob file ein ordner ist: wenn ja rekursiver aufruf von decrypt_folder
-        if [ -d $file ];
-        then
-            cd $file
-            decrypt_folder
-            cd ..
-        
-        # entschlüssle dateien, output als $dateiname ohne .gpg endung
-        else
-            echo "Entschlüssele $file"
-            gpg -d $file > $(basename $file .gpg) 
-            rm $file 
-        fi
+        # Ruft decrypt in allen Unterverzeichnissen auf
+        cd "$dir"
+        decrypt_folder
+        cd ..
     done
-echo "Dateien wurden nach $crypt_dir entschlüsselt"
+
 }
-
-
 
 origin_dir=$PWD
 
@@ -50,20 +55,31 @@ operation=$(printf "Verschlüsseln\nEntschlüsseln" | dmenu -l 2 -p "Operation a
 
 # kopiert das zielverzeichnis nach ../$zielverzeichnis_en/decrypted und wechselt dort hin, started dann die en/decrypt function
 case $operation in
+
     "Verschlüsseln")
         echo "Beginne Verschlüsseln von $PWD"
-        crypt_dir=$PWD"_encrypted"
-        cp -dr $origin_dir $crypt_dir
-        cd $crypt_dir
+        
+        origin_base=$(basename $origin_dir)
+        
+        mkdir $PWD"_encrypted"
+
+        # crypt_dir=$PWD"_encrypted"
+        # cp -Lr $origin_dir $crypt_dir &&
+        # cd $crypt_dir || echo "Fehler beim kopieren" 
         
         encrypt_folder
         ;;
+
     "Entschlüsseln")
-        echo "Beginne Entschlüsseln von $PWD"
-        crypt_dir=$PWD"_decrypted"
-        cp -dr $origin_dir $crypt_dir
-        cd $crypt_dir
         
+        read -p "Verschlüsselte Dateien löschen? (j/n): " keep_enc
+        
+        echo "Beginne Entschlüsseln von $PWD"
+
+        # crypt_dir=$PWD"_decrypted"
+        # cp -Lr $origin_dir $crypt_dir && 
+        # cd $crypt_dir || echo "Fehler beim kopieren" 
+
         decrypt_folder
         ;;
 esac

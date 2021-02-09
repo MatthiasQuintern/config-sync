@@ -108,6 +108,8 @@ let g:vimtex_view_method = 'zathura'
 " Umgebungen
 autocmd FileType tex inoremap ;eq \begin{equation}<CR><CR>\label{eq:<++>}<Enter>\end{equation}<Enter><++><Esc>kkki<Tab>
 autocmd FileType tex inoremap ;fig \begin{figure}[h]<CR>\centering<Enter>\includegraphics[width=\textwidth]{<++>}<CR>\caption{<++>}<CR>\label{fig:<++>}<Enter>\end{figure}<CR><++><Esc>4kf=a 
+autocmd FileType tex inoremap ;tab \begin{table}[]<CR>\centering<CR>\begin{tabular}{<++>}<CR>\hline<CR><++><CR>\end{tabular}<CR>\caption{<++>}<CR>\label{tab:<++>}<CR>\end{table}<CR><++><Esc>9k/[<CR>a
+
 " erstellt eine Tex environment (begin end) mit dem argument
 fun! TexEnv()
     let env = input("Name der Tex-Umgebung: ")
