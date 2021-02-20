@@ -6,8 +6,8 @@ gpgconf --launch gpg-agent
 
 # Für yay:
 export VISUAL='vim'
-
-
+# Für prism_es2 für den CrapChat:
+export LD_LIBRARY_PATH="/usr/lib/jvm/java-11-openjfx/lib/"
 
 # ls-aliase
 alias ls='ls --color=auto'
@@ -32,6 +32,7 @@ alias gzmp3='sh ~/.scripts/mp3_convert.sh'
 # Start-aliase
 alias nv='nvidia-settings --load-config-only'
 alias vcam='sudo modprobe v4l2loopback && ls /dev |grep video'
+alias vshare='ffplay -video_size 1920x1080 -window_title "OBS-VCAM-SHARE" -left 1921 -top 0 -i /dev/video2' 
 
 # history aliase
 alias h='history'
@@ -47,9 +48,11 @@ alias please='sudo'
 alias hack='python3 ~/Python_Projekte/starthack.py'
 alias p='python3'
 alias supac='sudo pacman -S'
+alias no='sudo pacman -Rns'
 alias pactex='tllocalmgr'
 alias qrcode='qrencode -o ~/Bilder/QR_Codes/bash_qr_code.png --foreground=68228b --background=ffffff'
-alias lightshow='java -jar ~/Python_Projekte/LightShow.jar'
+alias lightshow='java -jar ~/Python_Projekte/java/LightShow.jar'
+alias crapchat='sh ~/Python_Projekte/java/crapchat.sh'
 alias gay='toilet -f mono9 -F border -w 132 --gay'
 alias biggay='toilet -f bigmono9 -F border -w 132 --gay'
 alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
