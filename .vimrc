@@ -136,9 +136,15 @@ autocmd FileType tex inoremap ;fr \frac{}{<++>} <++><Esc>T{2hi
  
 
 "
+" PYTHON:
+"
+autocmd FileType python noremap ;w <Esc>:w<CR>
+autocmd FileType python noremap ;wr <ESC>:w<CR>:! python3 %
+
+
+"
 " HTML:
 "
-
 autocmd FileType html inoremap ;i <em></em><Space><++><Esc>FeT>i
 autocmd FileType html inoremap ;b <b></b><Space><++><Esc>FbT>i
 autocmd FileType html inoremap ;p <p></p><Enter><Enter><++><Esc>2kf/T>i
