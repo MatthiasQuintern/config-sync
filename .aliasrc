@@ -42,6 +42,9 @@ alias hgrep='fc -El 0 | grep'
 alias brc='nano ~/.bashrc && source ~/.bashrc'
 alias zrc='vim ~/.zshrc && source ~/.zshrc'
 alias alrc='vim ~/.aliasrc'
+alias sxhrc='vim ~/.config/sxhkd/sxhkdrc'
+alias bsprc='vim ~/.config/bspwm/bspwmrc'
+alias polyrc='vim ~/.config/polybar/config'
 
 # Sonstige aliase
 alias please='sudo'
@@ -51,11 +54,13 @@ alias supac='sudo pacman -S'
 alias no='sudo pacman -Rns'
 alias pactex='tllocalmgr'
 alias qrcode='qrencode -o ~/Bilder/QR_Codes/bash_qr_code.png --foreground=68228b --background=ffffff'
+alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
+alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
+alias moni='sh ~/.scripts/monitor.sh'
+# Dummes Zeug
+alias redyt='sh ~/.scripts/redyt.sh'            # browse reddit
+alias starwars='telnet towel.blinkenlights.nl'  # watch star wars
 alias lightshow='java -jar ~/Python_Projekte/java/LightShow.jar'
 alias crapchat='sh ~/Python_Projekte/java/crapchat.sh'
 alias gay='toilet -f mono9 -F border -w 132 --gay'
 alias biggay='toilet -f bigmono9 -F border -w 132 --gay'
-alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
-alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
-alias redyt='sh ~/.scripts/redyt.sh'            # browse reddit
-alias starwars='telnet towel.blinkenlights.nl'  # watch star wars

@@ -5,7 +5,7 @@ target=$(printf "Website\nUni\nDotfiles" | dmenu -p "Was soll synchronisiert wer
 
 operation=$(printf "Push\nPull" | dmenu -p "Push oder Pull?")
 
-port="22"
+port="69"
 
 # bestimme client und server
 case $target in

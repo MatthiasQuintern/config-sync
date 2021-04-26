@@ -12,9 +12,6 @@ set incsearch			" show results while searching
 set formatoptions-=cro  "auto kommentieren aus
 set path+=**        " erlaubt rekursive suche nach dateien, für autocomplete
 set wildmenu        " zeigt bei :find die dateien an
-
-" toggle line wrap
-map <leader>w :call ToggleWrap()<CR>
 fun! ToggleWrap()
     if &wrap == "nowrap"
         set wrap
@@ -23,7 +20,6 @@ fun! ToggleWrap()
     endif
 endfun
 
-
 filetype plugin on
 
 "
@@ -31,6 +27,9 @@ filetype plugin on
 "
 " set leader to space
 let mapleader="\<Space>"
+
+" toggle line wrap
+map <leader>w :call ToggleWrap()<CR>
 
 " make splits open right and bottom
 set splitbelow splitright
@@ -62,7 +61,7 @@ map <F7> :setlocal spell! spelllang=en_us<CR>
 "
 call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
-    " Plug 'xuhdev/vim-latex-live-preview'
+    Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
     " Plug 'morhetz/gruvbox'  " color scheme
     Plug 'tpope/vim-surround' 
     Plug 'tpope/vim-commentary'
@@ -77,7 +76,7 @@ autocmd FileType tex,bib,python,html,java,vim inoremap " ""<left>
 autocmd FileType tex,bib,python,html,java,vim inoremap ( ()<left>
 autocmd FileType tex,bib,python,html,java,vim inoremap [ []<left>
 autocmd FileType tex,bib,python,html,java,vim inoremap { {}<left>
-autocmd FileType tex,bib,python,html,java,vim inoremap < <><left>
+autocmd FileType tex,bib,html,java,vim inoremap < <><left>
 
 autocmd FileType tex inoremap $ $$<left>
 
@@ -99,8 +98,8 @@ autocmd FileType tex nnoremap <leader>pp :! pdflatex % && biber %:p && pdflatex 
 autocmd FileType tex nnoremap <leader>d :! zathura %:r.pdf<CR>
 
 " " Live Preview
-" let g:livepreview_previewer = 'zathura'
-" let g:livepreview_use_biber = 1
+let g:livepreview_previewer = 'zathura'
+let g:livepreview_use_biber = 1
 
 " vimtex
 let g:vimtex_view_method = 'zathura'
@@ -148,3 +147,13 @@ autocmd FileType python noremap ;wr <ESC>:w<CR>:! python3 %
 autocmd FileType html inoremap ;i <em></em><Space><++><Esc>FeT>i
 autocmd FileType html inoremap ;b <b></b><Space><++><Esc>FbT>i
 autocmd FileType html inoremap ;p <p></p><Enter><Enter><++><Esc>2kf/T>i
+" Umlaute
+autocmd FileType html inoremap ü &uuml;
+autocmd FileType html inoremap Ü &Uuml;
+autocmd FileType html inoremap ä &auml;
+autocmd FileType html inoremap Ä &Auml;
+autocmd FileType html inoremap ö &ouml;
+autocmd FileType html inoremap Ö &Ouml;
+autocmd FileType html inoremap € &euro;
+autocmd FileType html inoremap ß &szlig;
+

@@ -31,9 +31,11 @@ ecd () {
 bindkey -s '^o' 'ecd\n'
 
 # Lines configured by zsh-newuser-install
-HISTFILE=~/.cache/zsh/.histfile
-HISTSIZE=10000
-SAVEHIST=10000
+export HISTFILE=~/.config/.zsh_histfile
+export HISTSIZE=100000
+export SAVEHIST=100000
+setopt INC_APPEND_HISTORY_TIME
+
 setopt autocd
 unsetopt beep notify
 bindkey -v
