@@ -34,16 +34,35 @@ map <leader>w :call ToggleWrap()<CR>
 " make splits open right and bottom
 set splitbelow splitright
 " shortcuts to change between splits without C-w
-map <C-h> <C-w>h
-map <C-l> <C-w>l
-map <C-k> <C-w>k
-map <C-j> <C-w>j
+" map <C-h> <C-w>h
+" map <C-l> <C-w>l
+" map <C-k> <C-w>k
+" map <C-j> <C-w>j
+
+nnoremap <Tab> :tabn<Cr>
+nnoremap <C-Tab> :tabp<Cr>
+
+" remap arrows to do nothing
+noremap <Left> <nop>
+noremap <Right> <nop>
+noremap <Up> <nop>
+noremap <Down> <nop>
+
+inoremap <Left> <nop>
+inoremap <Right> <nop>
+inoremap <Up> <nop>
+inoremap <Down> <nop>
 
 " hjkl mit crt im insert mode
 inoremap <C-h> <left>
 inoremap <C-j> <down>
 inoremap <C-k> <up>
 inoremap <C-l> <right>
+" hjkl mit crtl im normal mode
+nnoremap <C-h> 10<left>
+nnoremap <C-j> 10<down>
+nnoremap <C-k> 10<up>
+nnoremap <C-l> 10<right>
 
 " normal mode with double i
 inoremap jj <Esc>
@@ -71,11 +90,11 @@ call plug#end()
 "
 " KLAMMERN SCHLIESSEN:
 "
-autocmd FileType tex,bib,python,html,java,vim inoremap ' ''<left>
-autocmd FileType tex,bib,python,html,java,vim inoremap " ""<left>
-autocmd FileType tex,bib,python,html,java,vim inoremap ( ()<left>
-autocmd FileType tex,bib,python,html,java,vim inoremap [ []<left>
-autocmd FileType tex,bib,python,html,java,vim inoremap { {}<left>
+autocmd FileType cpp,hpp,tex,bib,python,html,java,vim inoremap ' ''<left>
+autocmd FileType cpp,hpp,tex,bib,python,html,java,vim inoremap " ""<left>
+autocmd FileType cpp,hpp,tex,bib,python,html,java,vim inoremap ( ()<left>
+autocmd FileType cpp,hpp,tex,bib,python,html,java,vim inoremap [ []<left>
+autocmd FileType cpp,hpp,tex,bib,python,html,java,vim inoremap { {}<left>
 autocmd FileType tex,bib,html,java,vim inoremap < <><left>
 
 autocmd FileType tex inoremap $ $$<left>
@@ -95,7 +114,7 @@ nnoremap <leader>tex :-1read $HOME/.vim/vorlage.tex<CR>gg
 " Compiling- Basic: <leader>pb - Bibtex: <leader>pp
 autocmd FileType tex nnoremap <leader>pb :! pdflatex %<CR>
 autocmd FileType tex nnoremap <leader>pp :! pdflatex % && biber %:p && pdflatex % && pdflatex %<CR>
-autocmd FileType tex nnoremap <leader>d :! zathura %:r.pdf<CR>
+autocmd FileType tex nnoremap <leader>d :! zathura %:r.pdf &<CR>
 
 " " Live Preview
 let g:livepreview_previewer = 'zathura'
@@ -157,3 +176,23 @@ autocmd FileType html inoremap Ö &Ouml;
 autocmd FileType html inoremap € &euro;
 autocmd FileType html inoremap ß &szlig;
 
+"
+" C/C++
+"
+function! SplitHeader()
+    " check which filetype and then open header/source in vsplit
+    if (expand("%:e") == "cpp")
+        execute "vsplit %:t:r.hpp"
+    elseif (expand("%:e") == "c")
+        execute "vsplit %:t:r.h"
+    elseif (expand("%:e") == "hpp")
+        execute "vsplit %:t:r.cpp"
+        :exe "normal \<c-w>r"
+    elseif (expand("%:e") == "h")
+        execute "vsplit %:t:r.c"
+        :exe "normal \<c-w>r"
+    endif
+endfunction
+
+" autocmd FileType c,cpp call SplitHeader()
+nnoremap <leader>h :call SplitHeader()<Cr>
