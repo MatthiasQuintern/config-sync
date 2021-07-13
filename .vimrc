@@ -40,7 +40,7 @@ set splitbelow splitright
 " map <C-j> <C-w>j
 
 nnoremap <Tab> :tabn<Cr>
-nnoremap <C-Tab> :tabp<Cr>
+" nmap <C-Tab> :tabp<Cr>
 
 " remap arrows to do nothing
 noremap <Left> <nop>
@@ -69,7 +69,7 @@ inoremap jj <Esc>
 
 " copy paste from system clipboard
 vnoremap <C-c> "+y
-map <C-v> "+P
+nnoremap <leader>v "+P
 
 " Rechtschreibprüfung
 map <F6> :setlocal spell! spelllang=de<CR>
@@ -82,9 +82,13 @@ call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
     Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
     " Plug 'morhetz/gruvbox'  " color scheme
-    Plug 'tpope/vim-surround' 
+    Plug 'neoclide/coc.nvim', { 'branch' : 'release' }
+    Plug 'tpope/vim-surround'
     Plug 'tpope/vim-commentary'
 call plug#end()
+
+" Source the cocrc file
+source ~/.vim/cocrc.vim
 
 
 "
@@ -114,7 +118,7 @@ nnoremap <leader>tex :-1read $HOME/.vim/vorlage.tex<CR>gg
 " Compiling- Basic: <leader>pb - Bibtex: <leader>pp
 autocmd FileType tex nnoremap <leader>pb :! pdflatex %<CR>
 autocmd FileType tex nnoremap <leader>pp :! pdflatex % && biber %:p && pdflatex % && pdflatex %<CR>
-autocmd FileType tex nnoremap <leader>d :! zathura %:r.pdf &<CR>
+autocmd FileType tex nnoremap <leader>d :!! zathura %:r.pdf &<CR>
 
 " " Live Preview
 let g:livepreview_previewer = 'zathura'
