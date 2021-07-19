@@ -21,7 +21,6 @@ fun! ToggleWrap()
 endfun
 
 filetype plugin on
-
 "
 " ALLGEMEINE MAPPINGS:
 "
@@ -30,6 +29,8 @@ let mapleader="\<Space>"
 
 " toggle line wrap
 map <leader>w :call ToggleWrap()<CR>
+" folds
+set foldmethod=indent
 
 " make splits open right and bottom
 set splitbelow splitright
@@ -39,8 +40,10 @@ set splitbelow splitright
 " map <C-k> <C-w>k
 " map <C-j> <C-w>j
 
-nnoremap <Tab> :tabn<Cr>
-" nmap <C-Tab> :tabp<Cr>
+" TABS
+nnoremap <tab> :tabn<Cr>
+nnoremap <C-tab> :tabprevious<Cr>
+nnoremap <C-t> :tabnew 
 
 " remap arrows to do nothing
 noremap <Left> <nop>
@@ -64,7 +67,11 @@ nnoremap <C-j> 10<down>
 nnoremap <C-k> 10<up>
 nnoremap <C-l> 10<right>
 
-" normal mode with double i
+" jump to paragraph
+nnoremap ü {
+nnoremap ä }
+
+" normal mode with double j
 inoremap jj <Esc>
 
 " copy paste from system clipboard
@@ -81,15 +88,38 @@ map <F7> :setlocal spell! spelllang=en_us<CR>
 call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
     Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
-    " Plug 'morhetz/gruvbox'  " color scheme
+    Plug 'morhetz/gruvbox'
     Plug 'neoclide/coc.nvim', { 'branch' : 'release' }
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-commentary'
 call plug#end()
 
+" Gruvbox colorscheme
+
+set background=dark 
+autocmd VimEnter * hi Normal ctermbg=none
+let g:gruvbox_transparent_bg='1'
+colorscheme gruvbox
+
+
 " Source the cocrc file
 source ~/.vim/cocrc.vim
 
+"
+" SANTASTIC
+"
+" execute pathogen#infect()
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1 " Auto-Öffne/Schließe die Liste wenn fehler detektiert werden. Sonst: :Errors
+let g:syntastic_loc_list_height = 5
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+let g:syntastic_cpp_compiler_options = "-std=c++20"
 
 "
 " KLAMMERN SCHLIESSEN:
@@ -183,17 +213,18 @@ autocmd FileType html inoremap ß &szlig;
 "
 " C/C++
 "
+
 function! SplitHeader()
     " check which filetype and then open header/source in vsplit
     if (expand("%:e") == "cpp")
-        execute "vsplit %:t:r.hpp"
+        execute "vsplit %:r.hpp"
     elseif (expand("%:e") == "c")
-        execute "vsplit %:t:r.h"
+        execute "vsplit %:r.h"
     elseif (expand("%:e") == "hpp")
-        execute "vsplit %:t:r.cpp"
+        execute "vsplit %:r.cpp"
         :exe "normal \<c-w>r"
     elseif (expand("%:e") == "h")
-        execute "vsplit %:t:r.c"
+        execute "vsplit %:r.c"
         :exe "normal \<c-w>r"
     endif
 endfunction
