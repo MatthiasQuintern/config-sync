@@ -47,6 +47,10 @@ alias sxhrc='vim ~/.config/sxhkd/sxhkdrc'
 alias bsprc='vim ~/.config/bspwm/bspwmrc'
 alias polyrc='vim ~/.config/polybar/config'
 
+# surfac aliase
+alias ri='sudo systemctl restart iwd'
+alias st='sudo systemctl start iptsd'
+
 # Sonstige aliase
 alias please='sudo'
 alias hack='python3 ~/Python_Projekte/starthack.py'
