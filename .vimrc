@@ -45,6 +45,32 @@ nnoremap <tab> :tabn<Cr>
 nnoremap <C-tab> :tabprevious<Cr>
 nnoremap <C-t> :tabnew 
 
+"
+" SESSION
+"
+function! MakeSession()
+  let b:sessiondir = $HOME . "/.vim/sessions" . getcwd()
+  if (filewritable(b:sessiondir) != 2)
+    exe 'silent !mkdir -p ' b:sessiondir
+    redraw!
+  endif
+  let b:filename = b:sessiondir . '/session.vim'
+  exe "mksession! " . b:filename
+endfunction
+
+function! LoadSession()
+  let b:sessiondir = $HOME . "/.vim/sessions" . getcwd()
+  let b:sessionfile = b:sessiondir . "/session.vim"
+  if (filereadable(b:sessionfile))
+    exe 'source ' b:sessionfile
+  else
+    echo "No session loaded."
+  endif
+endfunction
+au VimEnter * nested :call LoadSession()
+" au VimLeave * :call MakeSession()
+nnoremap <leader>W :call MakeSession()
+
 " remap arrows to do nothing
 noremap <Left> <nop>
 noremap <Right> <nop>
@@ -89,17 +115,24 @@ call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
     Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
     Plug 'morhetz/gruvbox'
+    Plug 'preservim/nerdtree'
     Plug 'neoclide/coc.nvim', { 'branch' : 'release' }
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-commentary'
 call plug#end()
 
-" Gruvbox colorscheme
 
+" Gruvbox colorscheme
 set background=dark 
 autocmd VimEnter * hi Normal ctermbg=none
 let g:gruvbox_transparent_bg='1'
 colorscheme gruvbox
+
+
+"
+" NERDTREE
+"
+nnoremap <leader>n :NERDTreeFocus<CR>
 
 
 " Source the cocrc file

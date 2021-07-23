@@ -46,6 +46,7 @@ alias alrc='vim ~/.aliasrc'
 alias sxhrc='vim ~/.config/sxhkd/sxhkdrc'
 alias bsprc='vim ~/.config/bspwm/bspwmrc'
 alias polyrc='vim ~/.config/polybar/config'
+alias vrc='vim ~/.vimrc'
 
 # surfac aliase
 alias ri='sudo systemctl restart iwd'
