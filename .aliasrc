@@ -51,6 +51,7 @@ alias vrc='vim ~/.vimrc'
 # surfac aliase
 alias ri='sudo systemctl restart iwd'
 alias st='sudo systemctl start iptsd'
+alias sc='sudo systemctl'
 
 # Sonstige aliase
 alias please='sudo'
