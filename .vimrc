@@ -41,8 +41,12 @@ set splitbelow splitright
 " map <C-j> <C-w>j
 
 " TABS
-nnoremap <tab> :tabn<Cr>
-nnoremap <C-tab> :tabprevious<Cr>
+" nnoremap <C-I> <Tab>
+" nnoremap <Tab> :tabn<Cr>
+" nnoremap <C-Tab> :tabprevious<Cr>
+" nnoremap <C-Tab> gT
+nmap <C-l> gt
+nmap <C-h> gT
 nnoremap <C-t> :tabnew 
 
 "
@@ -67,8 +71,10 @@ function! LoadSession()
     echo "No session loaded."
   endif
 endfunction
-au VimEnter * nested :call LoadSession()
-" au VimLeave * :call MakeSession()
+" au VimEnter * nested :call LoadSession()
+au VimLeave * :call MakeSession()
+nnoremap <leader>L :call LoadSession()<Cr>
+nnoremap <leader>l :hi Normal ctermbg=none<Cr>
 nnoremap <leader>W :call MakeSession()
 
 " remap arrows to do nothing
@@ -88,10 +94,10 @@ inoremap <C-j> <down>
 inoremap <C-k> <up>
 inoremap <C-l> <right>
 " hjkl mit crtl im normal mode
-nnoremap <C-h> 10<left>
+" nnoremap <C-h> 10<left>
 nnoremap <C-j> 10<down>
 nnoremap <C-k> 10<up>
-nnoremap <C-l> 10<right>
+" nnoremap <C-l> 10<right>
 
 " jump to paragraph
 nnoremap ü {
@@ -122,17 +128,18 @@ call plug#begin('~/.vim/plugged')
 call plug#end()
 
 
-" Gruvbox colorscheme
+" colorscheme gruvbox
 set background=dark 
-autocmd VimEnter * hi Normal ctermbg=none
 let g:gruvbox_transparent_bg='1'
+autocmd VimEnter * hi Normal ctermbg=none
 colorscheme gruvbox
+hi Normal ctermbg=none
 
 
 "
 " NERDTREE
 "
-nnoremap <leader>n :NERDTreeFocus<CR>
+nnoremap <leader>n :NERDTreeToggle<CR>
 
 
 " Source the cocrc file
@@ -146,13 +153,13 @@ source ~/.vim/cocrc.vim
 " set statusline+=%{SyntasticStatuslineFlag()}
 " set statusline+=%*
 
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1 " Auto-Öffne/Schließe die Liste wenn fehler detektiert werden. Sonst: :Errors
-let g:syntastic_loc_list_height = 5
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1 " Auto-Öffne/Schließe die Liste wenn fehler detektiert werden. Sonst: :Errors
+" let g:syntastic_loc_list_height = 5
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
 
-let g:syntastic_cpp_compiler_options = "-std=c++20"
+" let g:syntastic_cpp_compiler_options = "-std=c++20"
 
 "
 " KLAMMERN SCHLIESSEN:
@@ -246,6 +253,10 @@ autocmd FileType html inoremap ß &szlig;
 "
 " C/C++
 "
+autocmd FileType cpp imap ö {
+autocmd FileType cpp imap Ö }
+autocmd FileType cpp imap ä [
+autocmd FileType cpp imap Ä ]
 
 function! SplitHeader()
     " check which filetype and then open header/source in vsplit
@@ -264,3 +275,4 @@ endfunction
 
 " autocmd FileType c,cpp call SplitHeader()
 nnoremap <leader>h :call SplitHeader()<Cr>
+autocmd BufEnter *.tpp :setlocal filetype=cpp
