@@ -72,7 +72,7 @@ function! LoadSession()
   endif
 endfunction
 " au VimEnter * nested :call LoadSession()
-au VimLeave * :call MakeSession()
+" au VimLeave * :call MakeSession()
 nnoremap <leader>L :call LoadSession()<Cr>
 nnoremap <leader>l :hi Normal ctermbg=none<Cr>
 nnoremap <leader>W :call MakeSession()
@@ -272,7 +272,19 @@ function! SplitHeader()
         :exe "normal \<c-w>r"
     endif
 endfunction
+function! SplitTemplateFile()
+    " check which filetype and then open header/templatefile in vsplit
+    if (expand("%:e") == "cpp")
+        execute "vsplit %:r.tpp"
+    elseif (expand("%:e") == "hpp")
+        execute "vsplit %:r.tpp"
+    elseif (expand("%:e") == "tpp")
+        execute "vsplit %:r.hpp"
+        :exe "normal \<c-w>r"
+    endif
+endfunction
 
 " autocmd FileType c,cpp call SplitHeader()
 nnoremap <leader>h :call SplitHeader()<Cr>
+nnoremap <leader>H :call SplitTemplateFile()<Cr>
 autocmd BufEnter *.tpp :setlocal filetype=cpp
