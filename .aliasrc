@@ -6,6 +6,8 @@ gpgconf --launch gpg-agent
 
 # vim default editor
 export VISUAL='vim'
+# vim swap files löschen
+alias rmvim='rm ~/.cache/vim/swap/*'
 # Für prism_es2 für den CrapChat:
 export LD_LIBRARY_PATH="/usr/lib/jvm/java-11-openjfx/lib/"
 
@@ -54,6 +56,7 @@ alias st='sudo systemctl start iptsd'
 alias sc='sudo systemctl'
 
 # Sonstige aliase
+alias sctl='sudo systemctl'
 alias please='sudo'
 alias hack='python3 ~/Python_Projekte/starthack.py'
 alias p='python3'
@@ -64,6 +67,7 @@ alias qrcode='qrencode -o ~/Bilder/QR_Codes/bash_qr_code.png --foreground=68228b
 alias unisync='rsync -a matthias@quintern.xyz:/home/matthias/Uni/Phy_Sem_3/ ~/Dokumente/Uni/Phy_Sem_3'
 alias websync='rsync -a ~/Dokumente/Website/ matthias@quintern.xyz:/www'
 alias moni='sh ~/.scripts/monitor.sh'
+alias make6='make -j 6'
 # Dummes Zeug
 alias redyt='sh ~/.scripts/redyt.sh'            # browse reddit
 alias starwars='telnet towel.blinkenlights.nl'  # watch star wars

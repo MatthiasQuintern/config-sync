@@ -120,11 +120,17 @@ map <F7> :setlocal spell! spelllang=en_us<CR>
 call plug#begin('~/.vim/plugged')
     Plug 'lervag/vimtex'
     Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
-    Plug 'morhetz/gruvbox'
     Plug 'preservim/nerdtree'
     Plug 'neoclide/coc.nvim', { 'branch' : 'release' }
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-commentary'
+    Plug 'sheerun/vim-polyglot'
+    " colorschemes
+    Plug 'morhetz/gruvbox'
+    Plug 'sonph/onehalf', { 'rtp': 'vim/' }
+    Plug 'itchyny/landscape.vim'
+    Plug 'ErichDonGubler/vim-sublime-monokai'
+    Plug 'marciomazza/vim-brogrammer-theme'
 call plug#end()
 
 
@@ -253,6 +259,10 @@ autocmd FileType html inoremap ß &szlig;
 "
 " C/C++
 "
+" Highlight plugin in .vim/pack https://github.com/bfrg/vim-cpp-modern
+let g:cpp_member_highlight = 1
+let g:cpp_attributes_highlight = 1
+
 autocmd FileType cpp imap ö {
 autocmd FileType cpp imap Ö }
 autocmd FileType cpp imap ä [

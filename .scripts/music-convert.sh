@@ -78,4 +78,3 @@ case $answer in
 	* ) echo "Keine Dateien gelöscht. Fertig!"
 	;;
 esac
-
