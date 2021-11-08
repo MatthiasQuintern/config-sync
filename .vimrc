@@ -125,6 +125,8 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-commentary'
     Plug 'sheerun/vim-polyglot'
+    " syntax
+    Plug 'rubixninja314/vim-mcfunction'
     " colorschemes
     Plug 'morhetz/gruvbox'
     Plug 'sonph/onehalf', { 'rtp': 'vim/' }
@@ -298,3 +300,8 @@ endfunction
 nnoremap <leader>h :call SplitHeader()<Cr>
 nnoremap <leader>H :call SplitTemplateFile()<Cr>
 autocmd BufEnter *.tpp :setlocal filetype=cpp
+
+" 
+" Andere
+"
+autocmd BufEnter *.mcfunction setlocal commentstring=#%s

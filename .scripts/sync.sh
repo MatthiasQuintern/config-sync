@@ -50,25 +50,9 @@ esac
 # führt die kommandos aus, je nachdem ob gepushed oder gepulled wird
 case $operation in
     "Push")
-        rsync -av -e "ssh -p $port" $client $server
+        rsync -avu -e "ssh -p $port" $client $server
         ;;
     "Pull")
-        rsync -av -e "ssh -p $port" $server $client
+        rsync -avu -e "ssh -p $port" $server $client
         ;;
 esac
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,46 @@
+<!DOCTYPE patchbay>
+<patchbay version="0.9.5" name="fl1">
+ <output-sockets>
+  <socket client="strawberry" type="jack-audio" name="strawberry 1" exclusive="off">
+   <plug>out_autoaudiosink\-51\-actual\-sink\-jackaudio_1</plug>
+   <plug>out_autoaudiosink\-51\-actual\-sink\-jackaudio_2</plug>
+  </socket>
+  <socket client="FL64" type="jack-audio" name="FL 1-4" exclusive="off">
+   <plug>out_2</plug>
+   <plug>out_3</plug>
+   <plug>out_4</plug>
+   <plug>out_1</plug>
+  </socket>
+  <socket client="system" type="jack-audio" name="system 1-4" exclusive="off">
+   <plug>capture_1</plug>
+   <plug>capture_2</plug>
+   <plug>capture_3</plug>
+   <plug>capture_4</plug>
+  </socket>
+ </output-sockets>
+ <input-sockets>
+  <socket client="FL64" type="jack-audio" name="FL 1-4" exclusive="off">
+   <plug>in_1</plug>
+   <plug>in_2</plug>
+   <plug>in_3</plug>
+   <plug>in_4</plug>
+  </socket>
+  <socket client="FL64" type="jack-audio" name="FL 5-6" exclusive="off">
+   <plug>in_5</plug>
+   <plug>in_6</plug>
+  </socket>
+  <socket client="system" type="jack-audio" name="system 1-4" exclusive="off">
+   <plug>playback_2</plug>
+   <plug>playback_3</plug>
+   <plug>playback_4</plug>
+   <plug>playback_1</plug>
+  </socket>
+ </input-sockets>
+ <slots/>
+ <cables>
+  <cable output="strawberry 1" type="jack-audio" input="FL 5-6"/>
+  <cable output="FL 1-4" type="jack-audio" input="system 1-4"/>
+  <cable output="system 1-4" type="jack-audio" input="FL 1-4"/>
+ </cables>
+</patchbay>
+

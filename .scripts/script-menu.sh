@@ -6,7 +6,8 @@ arg1="$1"
 arg2="$2"
 arg3="$3"
 
-choice=$(ls $HOME/.scripts | dmenu -l 7 -p "Skript auswählen:")
+# -p adds a / do dirs, grep -v / removes the dir entries
+choice=$(ls -p $HOME/.scripts | grep -v / | dmenu -l 7 -p "Skript auswählen:")
 
 # -z wenn der string leer ist
 if [ -z $choice ]; then
