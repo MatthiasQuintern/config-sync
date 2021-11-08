@@ -9,7 +9,6 @@ port="69"
 
 # bestimme client und server
 case $target in
-   
     "Website")
         # wähle website aus
         website=$(printf "ge75yag\nquintern\nglowzwiebel\ngabriel" | dmenu -p "Welche Website?")

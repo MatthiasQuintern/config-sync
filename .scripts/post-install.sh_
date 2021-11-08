@@ -1,37 +1,14 @@
 #!/bin/bash
 # Get the dir to cd back to it when leaving
 CONFIG_DIR=$PWD
-
-#
-# SETTINGS
-#
 # Path to the config sync script
 CONFIG_SYNC="$HOME/.scripts/config_sync.sh --update"
+# CONFIG_DIR=~/Sync/dotfiles
 WINE_DIR=$HOME/.wine
 
-# packages to install
-declare -a pkgs_terminal=(wget git ffmpeg rsync zip unzip tar ntfs-3g neofetch gdb youtube-dl python-pip fakeroot make patch)
-declare -a pkgs_ranger=(ranger)
-declare -a pkgs_zsh=(zsh zsh-syntax-highlighting)
-declare -a pkgs_vim=(gvim nodejs npm clang doxygen texlive-core texlive-latexextra)
-declare -a pkgs_x=(xorg-server xorg-apps)
-declare -a pkgs_lxdm=(lxdm)
-declare -a pkgs_lxdm_aur=(lxdm-themes)
-declare -a pkgs_bspwm=(bspwm sxhkd picom python-pywal rofi playerctl python-dbus ttf-nerd-fonts-symbols nitrogen)
-declare -a pkgs_bspwm_aur=(polybar ttf-unifont)
-declare -a pkgs_xfce=(xfce4 thunar-media-tags-plugin xfce4-mount-plugin xfce4-notifyd xfce4-pulseaudio-plugin xfce4-screensaver xfce4-taskmanager xfce4-whiskermenu-plugin)
-declare -a pkgs_graphical_core=(xfce4-terminal uerbezug flameshot firefox libreoffice-fresh libreoffice-fresh-de zathura zathura-pdf-poppler sxiv pavucontrol catfish ttf-ubuntu-font-family)
-declare -a pkgs_graphical_media=(gimp strawberry vlc audacity)
-declare -a pkgs_graphical_gaming=(steam discord) 
-declare -a pkgs_tum_vpn=(networkmanager openvpn networkmanager-openvpn)
-declare -a pkgs_tum_vpn_pip=(eduvpn-client)
-declare -a pkgs_wine=(wine wine-gecko wine-mono wineasio winetricks)
-declare -a pkgs_jack=(jack2 jack2-dbus qjackctl pulseaudio-jack)
 
-# 
-# UTILITY
-#
 INIT=0
+
 # indent shows tree
 CORE=0
     TERMINAL_PROGRAMS=0
@@ -47,8 +24,8 @@ JACK=0
 
 show_help()
 {
-    printf "\e[34mFlags:\e[33m
-    Argument        Short   Install:\e[0m
+    echo "Flags:
+    Argument        Short   Install:
     --init          -i      pacman.conf, sudo, pam_env
     --core          -c      --terminal --X --BSPWM --XFCE --graphical
     --zsh                   zsh shell
@@ -59,28 +36,10 @@ show_help()
     --graphical     -g      gui programs
     --eduvpn                eduvpn
     --wine          -w      wine, wineasio, winetricks, create default wineprefix
-    --jack          -j      jack2, qjackctl\n"
+    --jack          -j      jack2, qjackctl
+    "
 }
 
-FMT_MESSAGE="\e[1;34m%s\e[0m\n"
-FMT_ERROR="\e[1;31mERROR: \e[0m%s\n"
-# bold green
-FMT_INSTALL="\e[1;32mInstalling: \e[0m"
-# blue with normal ,
-FMT_PKGS="\e[36m%s\e[0m, "
-print_pkgs()
-{
-    printf "$FMT_INSTALL"
-    printf "$FMT_PKGS" "${@}" | sed "s/, \$/\n/"
-}
-
-#
-# PARSE ARGS
-#
-if [ -z $1 ]; then
-    show_help
-    exit 0
-fi
 while (( "$#" )); do
     case "$1" in
         -i|--init)
@@ -128,7 +87,7 @@ while (( "$#" )); do
             shift
             ;;
         *) # unsupported flags
-            printf "$FMT_ERROR" "Unsupported argument or flag $1" >&2
+            echo "Error: Unsupported argument or flag $1" >&2
             show_help
             exit 1
             ;;
@@ -136,38 +95,29 @@ while (( "$#" )); do
 done
 
 
-#
+
+
 # INIT: pacman conf, sudo and pam_env (for XDG_..._HOME variables)
-#
 if [ $INIT = 1 ]; then
-    # if not running as root
     if [ ! $(whoami) -e "root" ]; then
-        printf "$FMT_ERROR" "Initialisation needs to be run as root."
+        echo "Initialisation needs to be run as root."
         exit 1
     fi
 
-    # sudoers not in dir
-    if [ -z $(ls | grep "etc") ]; then
-        printf "$FMT_ERROR" '"etc" directory not found. Navigate to folder containing dotfiles and re-run.'
-        exit 1
-    fi
-
-
-    printf "$FMT_MESSAGE" "Installing pacman.conf"
+    echo "Installing pacman.conf"
     cp etc/pacman.conf /etc/
 
-    printf "$FMT_MESSAGE" "Installing pam_env"
+    echo "Installing pam_env"
     cp etc/security/pam_env.conf /etc/security/
 
-    printf "$FMT_MESSAGE" "Updating pacman mirrors"
+    echo "Updating pacman mirrors"
     pacman -Sy
 
-    printf "$FMT_MESSAGE" "Installing sudo with sudoers config"
+    echo "Installing sudo with sudoers config"
     pacman -S sudo
-    # cant use $CONFIG_SYNC since rsync is not installed yet
     cp etc/sudoers /etc
 
-    printf "$FMT_MESSAGE" "Please log out and log in as user, then run \"echo \$XGD_CONFIG_HOME\". It should not be empty"
+    echo "Please log out and log in as user, then run \"echo \$XGD_CONFIG_HOME\". It should not be empty"
     exit 0
 fi
 
@@ -176,20 +126,20 @@ fi
 # the scripts uses "~" and I dont want the stuff to end up in /root
 # also, you shouldnt run yay as root
 if [ $(whoami) = "root" ]; then
-    printf "$FMT_ERROR" "This script uses sudo if it needs root-rights. Please run it as user. (Except when using -i)"
+    echo "This script uses sudo if it needs root-rights. Please run it as user."
     exit 1
 fi
 
 
-printf "$FMT_MESSAGE" "Updating pacman mirrors"
+echo "Updating pacman mirrors"
 sudo pacman -Sy
 
 # INSTALL TERMINAL PROGRAMS
 if [ $TERMINAL_PROGRAMS = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_terminal[@]}
-    sudo pacman -S $pkgs_terminal
+    echo "Installing terminal programs:\n wget, git, ffmpeg, rsync, zip, unzip, tar, ntfs, neofetch, gnu-debugger(gdb), youtube-dl fakeroot"
+    sudo pacman -S wget git ffmpeg rsync zip unzip tar ntfs-3g neofetch gdb youtube-dl python-pip fakeroot make patch
 
-    print_pkgs "yay"
+    echo "Installing yay - AUR helper"
     cd /tmp
     git clone https://aur.archlinux.org/yay-git.git
     cd yay-git
@@ -197,12 +147,13 @@ if [ $TERMINAL_PROGRAMS = 1 ] || [ $CORE = 1 ]; then
     cd $CONFIG_DIR
 
     # RANGER
-    print_pkgs ${pkgs_ranger[@]}
-    sudo pacman -S $pkgs_ranger
+    echo "Installing ranger"
+    sudo pacman -S ranger
+    echo "Installing ranger config files"
     $CONFIG_SYNC ranger
 
     # NICOLE
-    print_pkgs "nicole"
+    echo "Installing nicole"
     cd /tmp
     git clone "https://github.com/MatthiasQuintern/nicole"
     cd nicole
@@ -214,36 +165,38 @@ fi
 
 # INSTALL ZSH
 if [ $ZSH = 1 ] || [ $TERMINAL_PROGRAMS = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_zsh[@]}
-    sudo pacman -S $pkgs_zsh
-    printf "$FMT_MESSAGE" "Setting zsh as default shell"
+    echo "Installing zsh, zsh-syntax-highlighting"
+    sudo pacman -S zsh zsh-syntax-highlighting
+    echo "Setting zsh as default shell"
     sudo usermod -s /bin/zsh $(whoami)
+    echo "Installing zshrc"
     $CONFIG_SYNC zsh
 fi 
 
 
 # INSTALL VIM
 if [ $VIM = 1 ] || [ $TERMINAL_PROGRAMS = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_vim[@]}
-    sudo pacman -S $pkgs_vim
+    echo "Installing vim (gvim), clang, doxygen and texlive"
+    sudo pacman -S gvim nodejs npm clang doxygen texlive-core texlive-latexextra
     # vimrc
     $CONFIG_SYNC vim
     # plugged
-    print_pkgs "vim-plugged"
+    echo "Installing vim-plug plugin manager"
     mkdir -p ~/.vim/autoload/master
+    # wget "https://github.com/junegunn/vim-plug/plug.vim" -o "~/.vim/autoload/master/plug.vim"
     curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
-    printf "$FMT_MESSAGE" "Installing vim plugins listed in vimrc"
+    echo "Installing vim plugins listed in vimrc"
     vim -c PlugInstall
-    printf "$FMT_MESSAGE" "Installing coc-extensions: clangd, python"
+    echo "Installing coc-extensions: clangd, python"
     vim -c "CocInstall coc-clangd" -c "CocInstall coc-python"
 fi
 
 
 # INSTALL X and LXDM
 if [ $X = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_x[@]}
-    sudo pacman -S $pkgs_x
+    echo "Instaling X-window system"
+    sudo pacman -S xorg-server xorg-apps
     # https://wiki.archlinux.org/title/Xorg
 
     # install drivers
@@ -263,77 +216,83 @@ if [ $X = 1 ] || [ $CORE = 1 ]; then
     esac
     sudo pacman -S $drivers
 
-    print_pkgs ${pkgs_lxdm[@]}
-    sudo pacman -S $pkgs_lxdm
-    print_pkgs ${pkgs_lxdm_aur[@]}
-    yay -S $pkgs_lxdm_aur
+    echo "Instaling lxdm"
+    sudo pacman -S lxdm
+    echo "Installing lxdm arch themes"
+    yay -S lxdm-themes
+    echo "Installing config file"
     $CONFIG_SYNC lxdm
-    printf "$FMT_MESSAGE" "Enabling lxdm"
+    echo "Enabling lxdm"
     sudo systemctl enable lxdm
 fi
 
 
 # INSTALL BSPWM
 if [ $BSPWM = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_bspwm[@]}
-    sudo pacman -S $pkgs_bspwm
-    print_pkgs ${pkgs_bspwm_aur[@]}
-    yay -S $pkgs_bspwm_aur
+    echo "Installing BSPWM with SXHKD, picom, polybar (->needs pywal rofi playerctl, python-dbus, ttf-nerd-fonts-symbols, ttf-unifont) and nitrogen"
+    sudo pacman -S bspwm sxhkd picom python-pywal rofi playerctl python-dbus ttf-unifont ttf-nerd-fonts-symbols nitrogen 
+    yay -S ttf-unifont
+    yay -S polybar
+    echo "Install rc-files"
     $CONFIG_SYNC bspwm sxhkdrc picom polybar
-    printf "$FMT_MESSAGE" "Launch nitrogen when X is set up to select a wallpaper"
-    printf "$FMT_MESSAGE" "Run ~/.config/polybar/shapes/scripts/pywal.sh to generate a polybar color theme for the wallpaper"
+    echo "Launch nitrogen when X is set up to select a wallpaper"
+    echo "Run ~/.config/polybar/shapes/scripts/pywal.sh to generate a polybar color theme for the wallpaper"
 fi
 
 
 # INSTALL XFCE4
 if [ $XFCE = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_xfce[@]}
-    sudo pacman -S $pkgs_xfce
+    echo "Installing xfce4 with some extras:"
+    sudo pacman -S xfce4 thunar-media-tags-plugin xfce4-mount-plugin xfce4-notifyd xfce4-pulseaudio-plugin xfce4-screensaver xfce4-taskmanager xfce4-whiskermenu-plugin
+    echo "Installing xfce4 configs"
     $CONFIG_SYNC xfce4
 fi
 
 
 # INSTALL GRAPHICAL_PROGRAMS
 if [ $GRAPHICAL_PROGRAMS = 1 ] || [ $CORE = 1 ]; then
-    print_pkgs ${pkgs_graphical_core[@]}
-    sudo pacman -S $pkgs_graphical_core
+    echo "Installing graphical programs - core:\nxfce4-terminal, ueberzug flameshot, firefox, libreoffice zathura + pdf, sxiv, pavucontrol catfish"
+    sudo pacman -S xfce4-terminal uerbezug flameshot firefox libreoffice-fresh libreoffice-fresh-de zathura zathura-pdf-poppler sxiv pavucontrol catfish
+    echo "Installing xfce4 terminal rc"
     $CONFIG_SYNC terminal
 
-    print_pkgs ${pkgs_graphical_media[@]}
-    sudo pacman -S $pkgs_graphical_media
+    echo "Installing graphical programs - media:\ngimp, strawberry, vlc, audacity"
+    sudo pacman -S gimp strawberry vlc audacity
+    echo "Installing configs"
     $CONFIG_SYNC strawberry gimp audacity
-    print_pkgs ${pkgs_graphical_gaming[@]}
-    sudo pacman -S $pkgs_graphical_gaming
+    echo "Installing graphical programs - other:\nsteam, discord, ubuntu fonts"
+    sudo pacman -S steam discord ttf-ubuntu-font-family
 fi
 
 
 # INSTALL TUM eduvpn
 if [ $TUM_VPN = 1 ]; then
-    print_pkgs ${pkgs_tum_vpn[@]}
-    sudo pacman -S $pkgs_tum_vpn
+    echo "Installing and enabling networkmanager, openvpn, networkmanager-openvpn"
+    sudo pacman -S networkmanager openvpn networkmanager-openvpn
     sudo systemctl enable --now NetworkManager
-    print_pkgs ${pkgs_tum_vpn_pip[@]}
-    sudo pip3 install $pkgs_tum_vpn_pip
+    echo "Installing eduvpn-cli"
+    sudo pip3 install "eduvpn-client"
     eduvpn-cli configure "Technische Universität München (TUM)"
-    printf "$FMT_MESSAGE" "Run \"eduvpn-cli activate\" to activate the vpn. Then check https://dnsleaktest.com"
+    echo "Run \"eduvpn-cli activate\" to activate the vpn. Then check https://dnsleaktest.com"
 fi
 
 
 # INSTALL WINE
 if [ $WINE = 1 ]; then
     # https://wiki.cockos.com/wiki/index.php/Installing_and_configuring_WineASIO
-    print_pkgs ${pkgs_wine[@]}
-    sudo pacman -S $pkgs_wine
-    printf "$FMT_MESSAGE" "Creating wineprefix in $WINE_DIR"
+    echo "Installing wine, wineasio, winetricks"
+    sudo pacman -S wine wine-gecko wine-mono wineasio winetricks
+    echo "Creating wineprefix in $WINE_DIR"
     WINEPREFIX=$WINE_DIR winecfg
-    printf "$FMT_MESSAGE" "Updating wineasio config"
+    echo "Installing wineasio config"
     regedit wineasio.cfg
 fi
     
 
 # INSTALL JACK AUDIO
 if [ $JACK = 1 ]; then
-    print_pkgs ${pkgs_jack[@]}
-    sudo pacman -S $pkgs_jack
+    echo "Installing jack"
+    sudo pacman -S jack2 jack2-dbus qjackctl pulseaudio-jack
+    echo "Installing QJackCtl config"
     $CONFIG_SYNC jack
 fi
