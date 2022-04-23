@@ -1,55 +1,12 @@
-#/bin/bash
-# Copies all dotfiles listed in user_dotfiles and system_dotfiles to CONFIG_DIR
-# If you pass strings as arguments, only dotfiles that contain at least one of the strings are processed.
+#!/bin/bash
+# Copyright  ©  2022  Matthias  Quintern.
+# This software comes with no warranty.
+# This software is licensed under the GPL3
 
-#
-# SETTINGS
-#
-# directories where configs will be copied to
-CONFIG_DIR=~/Sync/dotfiles
-# directories where configs are backuped when updating your configs with the ones from $CONFIG_DIR
-BACKUP_DIR=~/Sync/rsync_backup
+# ABOUT
+# Copies all (dot)files listed in user_dotfiles and system_dotfiles to CONFIG_DIR
+# If you pass strings as parameters, only dotfiles that contain at least one of the strings are processed.
 
-# GIT
-GIT_REPO="https://github.com/MatthiasQuintern/dotfiles"
-GIT_BRANCH="master"
-
-# REMOTE
-REMOTE_DIR="matthias@quintern.xyz:/home/matthias/dotfiles"
-REMOTE_PORT=69
-
-# rsync with -R will place the files relative to the ., so 
-# ~/./.config/conf -> $CONFIG_DIR/home/.config/conf
-# append trailing slashes to directories
-# could just as well left ~/./ out and make it copy everything to $HOME, but then vim would not suggest the correct filepath :()
-declare -a user_dotfiles=(\
-    ~/./.zshrc 
-    ~/./.bashrc 
-    ~/./.aliasrc 
-    ~/./.config/ranger/rc.conf
-    ~/./.config/ranger/rifle.conf
-    ~/./.vimrc 
-    ~/./.vim/cocrc.vim
-    ~/./.vim/sessions
-    ~/./.config/strawberry/strawberry.conf
-    # ~/./.config/xfce4/terminal/terminalrc
-    ~/./.config/xfce4/
-    ~/./.config/bspwm/bspwmrc
-    ~/./.config/sxhkd/sxhkdrc
-    ~/./.config/polybar/
-    ~/./.config/picom.conf
-    ~/./.ssh/config
-    ~/./.config/rncbc.org/QjackCtl.conf
-)
-declare -a system_dotfiles=(\
-    /etc/./pacman.conf
-    /etc/./lxdm/lxdm.conf
-    # Where the XDG_..._HOME variables are defined
-    /etc/./security/pam_env.conf
-    /etc/./xdg/xfce4/
-    /etc/./sudoers
-    /etc/./X11/xorg.conf.d/00-keyboard.conf
-)
 
 #
 # UTILITY
@@ -59,6 +16,15 @@ FMT_ERROR="\e[1;31mERROR: \e[0m%s\n"
 FMT_BACKUP="\e[1;32mBacking Up:\e[0m %s\n"
 FMT_UPDATE="\e[1;33mUpdating:\e[0m %s\n"
 FMT_CONFIG="\e[34m%s\e:\t\e[1;33m%s\e[0m\n"
+
+# LOAD SETTINGS
+config_file=~/.config/config-sync.conf
+if [[ ! -f $config_file ]]; then
+    printf "$FMT_ERROR" "Could not find config file '$config_file'."
+    printf "$FMT_MESSAGE" "You can copy the template from /usr/share/config-sync/ to ~/.config and edit it to your liking."
+    exit 1
+fi
+source $config_file
 
 # check if a passed parameter is contained in file
 check_file_in_args()
@@ -85,6 +51,20 @@ check_git_repo()
     fi
 }
 
+check_rsync()
+{
+    if ! command -v rsync &> /dev/null; then
+        printf "$FMT_ERROR" "rsync is not installed. Please install rsync."
+        exit 1
+    fi
+}
+check_git()
+{
+    if ! command -v git &> /dev/null; then
+        printf "$FMT_ERROR" "git is not installed. Please install git."
+        exit 1
+    fi
+}
 
 #
 # SAVE CONFIGS
@@ -94,9 +74,7 @@ save_configs()
 {
     # make directories 
     mkdir -p $CONFIG_DIR/home
-    mkdir -p $BACKUP_DIR/home
     mkdir -p $CONFIG_DIR/etc
-    mkdir -p $BACKUP_DIR/etc
 
     for file in "${user_dotfiles[@]}"; do
         if check_file_in_args; then
@@ -117,6 +95,9 @@ save_configs()
             fi
         fi
     done
+
+    printf "$FMT_MESSAGE" "Changing ownership of all files in CONFIG_DIR to $USER:users"
+    sudo chown -R $USER:users $CONFIG_DIR
 }
 
 
@@ -136,6 +117,12 @@ update_all_configs()
 
 update_configs()
 {
+    mkdir -p $BACKUP_DIR/home &&
+    mkdir -p $BACKUP_DIR/etc || {
+        printf "$FMT_ERROR" "Can not create backup directories, exiting now. No installed file will be updated."
+        exit 1
+    }
+
     for file in "${user_dotfiles[@]}"; do
         if check_file_in_args; then
             mkdir -p $(dirname $file)
@@ -150,14 +137,24 @@ update_configs()
             mkdir -p $(dirname $file)
             file=$(echo $file | sed "s|/etc/||") # remove /etc/ from the filename
             printf "$FMT_UPDATE" "$file"
+
+            # sudoers permissions, must come before copying sudoers since sudo doesnt work when owned by user
+            if [ $file == "./sudoers" ]; then
+                printf "$FMT_MESSAGE" "Making sudoers in system readable only for root"
+                sudo chmod a-rwx $CONFIG_DIR/etc/sudoers
+                sudo chown root $CONFIG_DIR/etc/sudoers
+            fi
+
             sudo rsync -a --backup-dir $BACKUP_DIR/etc $CONFIG_DIR/etc/$file /etc/$file
 
-            # sudoers permissions
-            if [ $file == "/etc/./sudoers" ]; then
-                printf "$FMT_MESSAGE" "Making sudoers in system readable only for root"
-                sudo chmod a-r $CONFIG_DIR/etc/sudoers
-                sudo chmod u+r $CONFIG_DIR/etc/sudoers
+            # change ownership to root
+            sudo chown root:root /etc/$file
+
+            # change perm back
+            if [ $file == "./sudoers" ]; then
+                sudo chmod a+r $CONFIG_DIR/etc/sudoers
             fi
+
         fi
     done
 }
@@ -165,6 +162,7 @@ update_configs()
 
 git_push()
 {
+    echo $PWD
     if ! check_git_repo; then
         printf "$FMT_ERROR" "$PWD is not a git repo."
         read -p "Initialise git repo here? [y/n]: " answer
@@ -188,7 +186,9 @@ git_push()
         esac
     fi
 
-    printf "$FMT_MESSAGE" "Pushing repo"
+    git add -A &&
+    git commit &&
+    printf "$FMT_MESSAGE" "Pushing repo" &&
     git push -u origin $GIT_BRANCH ||
     printf "$FMT_ERROR" "Something went wrong: Could not push repo."
 }
@@ -233,15 +233,14 @@ git_pull()
 remote_push()
 {
     printf "$FMT_MESSAGE" "Pushing to remote: $REMOTE_DIR"
-    rsync -avu -e "ssh -p $REMOTE_PORT" $CONFIG_DIR $REMOTE_DIR ||
+    rsync -avu -e "ssh -p $REMOTE_PORT" $CONFIG_DIR/ $REMOTE_DIR ||
     printf "$FMT_ERROR" "Something went wrong: Could not push to remote."
-
 }
 
 remote_pull()
 {
     printf "$FMT_MESSAGE" "Pulling from remote: $REMOTE_DIR"
-    rsync -avu -e "ssh -p $REMOTE_PORT" $REMOTE_DIR $CONFIG_DIR ||
+    rsync -avu -e "ssh -p $REMOTE_PORT" $REMOTE_DIR/ $CONFIG_DIR ||
     printf "$FMT_ERROR" "Something went wrong: Could not pull from remote."
 }
     
@@ -252,7 +251,7 @@ remote_pull()
 show_help()
 {
     printf "\e[34mFlags:\e[33m
-Argument        Short   Install:\e[0m
+Argument        Short   Action:\e[0m
 --help          -h      show this
 --settings      -s      show current settings
 
@@ -291,6 +290,8 @@ if [ -z $1 ]; then
     show_help
     exit 0
 fi
+
+
 
 BACKUP=0
 UPDATE=0
@@ -356,20 +357,26 @@ cd $CONFIG_DIR || {
 # order: 
 #  backup - git-push - remote-push - git-pull - remote-pull - update
 if [ $BACKUP = 1 ]; then
+    check_rsync
     save_configs
 fi
 if [ $GIT_PUSH = 1 ]; then
+    check_git
     git_push
 fi
 if [ $GIT_PULL = 1 ]; then
+    check_git
     git_pull
 fi
 if [ $REMOTE_PUSH = 1 ]; then
+    check_rsync
     remote_push
 fi
 if [ $REMOTE_PULL = 1 ]; then
+    check_rsync
     remote_pull
 fi
 if [ $UPDATE = 1 ]; then
+    check_rsync
     update_configs
 fi
