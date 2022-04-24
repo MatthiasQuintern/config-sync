@@ -7,7 +7,6 @@
 # Copies all (dot)files listed in user_dotfiles and system_dotfiles to CONFIG_DIR
 # If you pass strings as parameters, only dotfiles that contain at least one of the strings are processed.
 
-
 #
 # UTILITY
 #
@@ -26,6 +25,7 @@ if [[ ! -f $config_file ]]; then
 fi
 source $config_file
 
+INCLUDE=1  # 1: Include mode, 0: exclude mode
 # check if a passed parameter is contained in file
 check_file_in_args()
 {
@@ -34,10 +34,10 @@ check_file_in_args()
     fi
     for string in ${FILES[@]}; do
         if [[ $file == *$string* ]]; then
-            return 0
+            return [ $INCLUDE = 1 ]  # is 0=true when in include mode
         fi
     done
-    return 1
+    return [ $INCLUDE = 0 ]  # is 1=false when in exclude mode
 }
 
 
@@ -63,6 +63,14 @@ check_git()
     if ! command -v git &> /dev/null; then
         printf "$FMT_ERROR" "git is not installed. Please install git."
         exit 1
+    fi
+}
+
+diff_files()
+{
+    # check if files differ
+    if [ -n $(diff $fileInFilesystem $newFile) ]; then
+        vimdiff $fileInFilesystem $newFile
     fi
 }
 
@@ -95,15 +103,13 @@ save_configs()
             fi
         fi
     done
-
-    printf "$FMT_MESSAGE" "Changing ownership of all files in CONFIG_DIR to $USER:users"
-    sudo chown -R $USER:users $CONFIG_DIR
 }
 
 
 #
 # UPDATE CONFIGS
 #
+#  deprecated
 update_all_configs()
 {
     # update user configs
@@ -128,7 +134,13 @@ update_configs()
             mkdir -p $(dirname $file)
             file=$(echo $file | sed "s|.*/\./||") # remove ~/./ from the filename
             printf "$FMT_UPDATE" "$file"
-            rsync -a --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home/$file $HOME/$file
+            if [ -z $DIFF ]; then
+                rsync -a --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home/$file $HOME/$file
+            else
+                #backup the file in the filesystem
+                rsync -a $HOME/$file $BACKUP_DIR/home/$file
+                vimdiff $CONFIG_DIR/home/$file $HOME/$file
+            fi
         fi
     done
 
@@ -251,13 +263,15 @@ remote_pull()
 show_help()
 {
     printf "\e[34mFlags:\e[33m
-Argument        Short   Action:\e[0m
+Argument        Short   Install:\e[0m
 --help          -h      show this
 --settings      -s      show current settings
 
 --backup        -b      copy dotfiles to \$CONFIG_DIR
 --update        -u      copy dotfiles from \$CONFIG_DIR into the system, current dotfiles are backed up to \$BACKUP_DIR
---all           -a      apply operation to all dotfiles
+--all           -a      apply operation to all dotfiles, overrides --exclude
+--exclude       -e      interpret all given strings as blacklist, not whitelist
+--diff          -d      use vimdiff to merge the file in the filesystem with the new one (applies only to --update)
 
 --git-pull              pull dotfiles from git repo
 --git-push              push dotfiles to git repo      
@@ -319,6 +333,12 @@ while (( "$#" )); do
         -a|--all)
             ALL=1
             shift ;;
+        -e|--exclude)
+            INCLUDE=0
+            shift ;;
+        -d|--diff)
+            DIFF=1
+            shift;;
         --git-pull)
             GIT_PULL=1
             shift ;;
