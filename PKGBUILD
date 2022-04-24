@@ -8,7 +8,7 @@ url="https:/github.com/MatthiasQuintern/config-sync"
 license=('GPL3')
 depends=('rsync')
 source=(config-sync.sh _config-sync.compdef.zsh config-sync.1.man config-sync.conf)
-md5sums=(081f646680002fe34c3d2ac42811a857 a1d4c87d375e5c7c5fd0a800c1904f52 13a3f2d8ed1790f401af7b6aa05c619a cfad8c606738bc9161f0f1d19d71e3b8)
+md5sums=(081f646680002fe34c3d2ac42811a857 ca58dacf1b7e04a778ac43f007ca34de fdaefe9cffa01195cfded7eba9f061c2 cfad8c606738bc9161f0f1d19d71e3b8)
 
 package() {
 	mkdir -p "${pkgdir}/usr/bin"

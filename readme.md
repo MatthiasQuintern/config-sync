@@ -15,6 +15,8 @@ There is a template in /usr/share/config-sync/ which you can copy to your config
 - `-b, --backup` Copy dotfiles to $CONFIG_DIR
 - `-u, --update` Copy dotfiles from $CONFIG_DIR into the system, current dotfiles are backed up to $BACKUP_DIR
 - `-a, --all` Apply operation to all dotfiles
+- `-e, --exclude` Interpret all given strings as blacklist, not whitelist
+- `--diff` Use vimdiff to merge the file in the filesystem with the new one (applies only to --update)
 - `--git-pull` Pull dotfiles from git repo to $CONFIG_DIR
 - `--git-push` Push dotfiles from $CONFIG_DIR to git repo
 - `--remote-pull` Pull dotfiles from remote location (eg. vps) to $CONFIG_DIR

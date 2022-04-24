@@ -8,11 +8,13 @@
 # SYNOPSIS
 | Backup:
 |    **config-sync** [OPTION...] -b PATHS...
+|    **config-sync** [OPTION...] -b -a
 |    **config-sync** [OPTION...] --git-push
 
 | Deploy/Update:
 |    **config-sync** [OPTION...] --git-pull
 |    **config-sync** [OPTION...] -u PATHS...
+|    **config-sync** [OPTION...] -u -a --diff
 
 # DESCRIPTION
 **config-sync** uses *rsync* to backup or deploy selected dotfiles.
@@ -38,6 +40,12 @@ There is a template in /usr/share/config-sync/ which you can copy to your config
 
 **-a**, **--all**
 : Apply operation to all dotfiles
+
+**-e,** **--exclude**
+: Interpret all given strings as blacklist, not whitelist
+
+**--diff**
+: Use vimdiff to merge the file in the filesystem with the new one (applies only to --update)
 
 **--git-pull**
 : Pull dotfiles from git repo to $CONFIG_DIR
