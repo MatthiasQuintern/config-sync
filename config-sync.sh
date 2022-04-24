@@ -29,22 +29,30 @@ INCLUDE=1  # 1: Include mode, 0: exclude mode
 # check if a passed parameter is contained in file
 check_file_in_args()
 {
-    if [ $ALL = 1 ]; then
+    if [[ $ALL = 1 ]]; then
         return 0
     fi
     for string in ${FILES[@]}; do
         if [[ $file == *$string* ]]; then
-            return [ $INCLUDE = 1 ]  # is 0=true when in include mode
+            if [[ $INCLUDE == 1 ]]; then  # is 0=true when in include mode
+                return 0
+            else
+                return 1
+            fi
         fi
     done
-    return [ $INCLUDE = 0 ]  # is 1=false when in exclude mode
+    if [[ $INCLUDE = 0 ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 
 # check if pwd is root of git repo
 check_git_repo()
 {
-    if [ -d .git ]; then
+    if [[ -d .git ]]; then
         return 0
     else
         return 1
@@ -63,14 +71,6 @@ check_git()
     if ! command -v git &> /dev/null; then
         printf "$FMT_ERROR" "git is not installed. Please install git."
         exit 1
-    fi
-}
-
-diff_files()
-{
-    # check if files differ
-    if [ -n $(diff $fileInFilesystem $newFile) ]; then
-        vimdiff $fileInFilesystem $newFile
     fi
 }
 
@@ -97,7 +97,7 @@ save_configs()
             sudo rsync -aR $file $CONFIG_DIR/etc
 
             # sudoers permissions
-            if [ $file == "/etc/./sudoers" ]; then
+            if [[ $file == "/etc/./sudoers" ]]; then
                 printf "$FMT_MESSAGE" "Warning: Making sudoers readable for users (necessary for push/pull, but potential security risk)."
                 sudo chmod a+r $CONFIG_DIR/etc/sudoers
             fi
@@ -134,12 +134,15 @@ update_configs()
             mkdir -p $(dirname $file)
             file=$(echo $file | sed "s|.*/\./||") # remove ~/./ from the filename
             printf "$FMT_UPDATE" "$file"
-            if [ -z $DIFF ]; then
+            if [[ -z $DIFF ]]; then
                 rsync -a --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home/$file $HOME/$file
             else
                 #backup the file in the filesystem
-                rsync -a $HOME/$file $BACKUP_DIR/home/$file
-                vimdiff $CONFIG_DIR/home/$file $HOME/$file
+                rsync $HOME/$file $BACKUP_DIR/home/$(basename $file)
+                if [[ -n $(diff $CONFIG_DIR/home/$file $HOME/$file) ]]; then
+                    vimdiff $CONFIG_DIR/home/$file $HOME/$file
+                fi
+
             fi
         fi
     done
@@ -157,7 +160,16 @@ update_configs()
                 sudo chown root $CONFIG_DIR/etc/sudoers
             fi
 
-            sudo rsync -a --backup-dir $BACKUP_DIR/etc $CONFIG_DIR/etc/$file /etc/$file
+            if [[ -z $DIFF ]]; then
+                sudo rsync -a --backup-dir $BACKUP_DIR/etc $CONFIG_DIR/etc/$file /etc/$file
+            else
+                #backup the file in the filesystem
+                rsync /etc/$file $BACKUP_DIR/etc/$(basename $file)
+                if [[ -n $(diff $CONFIG_DIR/etc/$file /etc/$file) ]]; then
+                    sudo vimdiff $CONFIG_DIR/etc/$file /etc/$file
+                fi
+
+            fi
 
             # change ownership to root
             sudo chown root:root /etc/$file
