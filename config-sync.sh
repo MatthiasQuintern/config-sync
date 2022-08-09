@@ -109,18 +109,6 @@ save_configs()
 #
 # UPDATE CONFIGS
 #
-#  deprecated
-update_all_configs()
-{
-    # update user configs
-    printf "$FMT_MESSAGE" "Updating all user configs"
-    rsync -aRu --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home $HOME
-
-    # update system configs
-    printf "$FMT_MESSAGE" "Updating all system configs"
-    sudo rsync -aRu --backup-dir $BACKUP_DIR/etc $CONFIG_DIR/etc /etc
-}
-
 update_configs()
 {
     mkdir -p $BACKUP_DIR/home &&
@@ -128,6 +116,14 @@ update_configs()
         printf "$FMT_ERROR" "Can not create backup directories, exiting now. No installed file will be updated."
         exit 1
     }
+    if [[ -n $DIFF ]]; then
+        printf "$FMT_MESSAGE" "Diff: Left side: File from \$CONFIG_DIR - Right side: File in place"
+        printf "$FMT_MESSAGE" "Move diffs from left to right using :diffget/:diffpull. [c ]c to jump to next diff." 
+        printf "$FMT_MESSAGE" "Press Enter to continue"
+        read
+    fi
+
+
 
     for file in "${user_dotfiles[@]}"; do
         if check_file_in_args; then
@@ -139,10 +135,18 @@ update_configs()
             else
                 #backup the file in the filesystem
                 rsync $HOME/$file $BACKUP_DIR/home/$(basename $file)
-                if [[ -n $(diff $CONFIG_DIR/home/$file $HOME/$file) ]]; then
-                    vimdiff $CONFIG_DIR/home/$file $HOME/$file
+                if [[ -f "$CONFIG_DIR/home/$file" ]]; then
+                    if [[ -n $(diff $CONFIG_DIR/home/$file $HOME/$file) ]]; then
+                        vimdiff $CONFIG_DIR/home/$file $HOME/$file
+                    fi
+                elif [[ -d "$CONFIG_DIR/home/$file" ]]; then
+                    for sub_dir_file in $(find $CONFIG_DIR/home/$file -type f -print); do
+                        sub_dir_file_in_place=$(echo "$sub_dir_file" | sed "s($CONFIG_DIR/home($HOME/(")
+                        if [[ -n $(diff "$sub_dir_file" "$sub_dir_file_in_place") ]]; then
+                            vimdiff "$sub_dir_file" "$sub_dir_file_in_place"
+                        fi
+                    done
                 fi
-
             fi
         fi
     done
@@ -165,8 +169,17 @@ update_configs()
             else
                 #backup the file in the filesystem
                 rsync /etc/$file $BACKUP_DIR/etc/$(basename $file)
-                if [[ -n $(diff $CONFIG_DIR/etc/$file /etc/$file) ]]; then
-                    sudo vimdiff $CONFIG_DIR/etc/$file /etc/$file
+                if [[ -f "$CONFIG_DIR/etc/$file" ]]; then
+                    if [[ -n $(diff $CONFIG_DIR/etc/$file /etc/$file) ]]; then
+                        vimdiff $CONFIG_DIR/etc/$file /etc/$file
+                    fi
+                elif [[ -d "$CONFIG_DIR/etc/$file" ]]; then
+                    for sub_dir_file in $(find $CONFIG_DIR/etc/$file -type f -print); do
+                        sub_dir_file_in_place=$(echo "$sub_dir_file" | sed "s($CONFIG_DIR/etc(/etc(")
+                        if [[ -n $(diff "$sub_dir_file" "$sub_dir_file_in_place") ]]; then
+                            vimdiff "$sub_dir_file" "$sub_dir_file_in_place"
+                        fi
+                    done
                 fi
 
             fi
