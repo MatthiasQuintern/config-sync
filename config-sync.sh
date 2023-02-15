@@ -17,7 +17,7 @@ FMT_UPDATE="\e[1;33mUpdating:\e[0m %s\n"
 FMT_CONFIG="\e[34m%s\e:\t\e[1;33m%s\e[0m\n"
 
 # LOAD SETTINGS
-config_file=~/.config/config-sync.conf
+config_file="$HOME/.config/config-sync.conf"
 if [[ ! -f $config_file ]]; then
     printf "$FMT_ERROR" "Could not find config file '$config_file'."
     printf "$FMT_MESSAGE" "You can copy the template from /usr/share/config-sync/ to ~/.config and edit it to your liking."
@@ -197,34 +197,38 @@ update_configs()
 }
 
 
+git_init() {
+    printf "$FMT_ERROR" "$PWD is not a git repo."
+    read -p "Initialise git repo here? [y/n]: " answer
+    case $answer in
+        y|Y)
+            git init &&
+            git add -A &&
+            git commit -m "initial commit" &&
+            git branch -M $GIT_BRANCH &&
+            printf "$FMT_MESSAGE" "Adding origin: $GIT_REPO" &&
+            git remote add origin $GIT_REPO ||
+            {
+                printf "$FMT_ERROR" "Something went wrong while setting up git repo."
+                exit 1
+            }
+            ;;
+        *)
+            printf "$FMT_MESSAGE" "Cancelled"
+            exit 0
+            ;;
+    esac
+}
+
 git_push()
 {
     echo $PWD
     if ! check_git_repo; then
-        printf "$FMT_ERROR" "$PWD is not a git repo."
-        read -p "Initialise git repo here? [y/n]: " answer
-        case $answer in
-            y|Y)
-                git init &&
-                git add -A &&
-                git commit -m "initial commit" &&
-                git branch -M $GIT_BRANCH &&
-                printf "$FMT_MESSAGE" "Adding origin: $GIT_REPO" &&
-                git remote add origin $GIT_REPO ||
-                {
-                    printf "$FMT_ERROR" "Something went wrong while setting up git repo."
-                    exit 1
-                }
-                ;;
-            *)
-                printf "$FMT_MESSAGE" "Cancelled"
-                exit 0
-                ;;
-        esac
+        git_init
     fi
 
     git add -A &&
-    git commit &&
+    git commit
     printf "$FMT_MESSAGE" "Pushing repo" &&
     git push -u origin $GIT_BRANCH ||
     printf "$FMT_ERROR" "Something went wrong: Could not push repo."
@@ -234,28 +238,7 @@ git_push()
 git_pull()
 {
     if ! check_git_repo; then
-        printf "$FMT_ERROR" "$PWD is not a git repo."
-        echo "Initialise git repo from remote \"$GIT_REPO\" here?"
-        read -p "[y/n]: " answer
-        case $answer in
-            y|Y)
-                git init &&
-                printf "$FMT_MESSAGE" "Adding origin: $GIT_REPO" &&
-                git remote add origin $GIT_REPO &&
-                git fetch origin &&
-                printf "$FMT_MESSAGE" "Checking out branch \"$GIT_BRANCH\" of origin" &&
-                git checkout $GIT_BRANCH ||
-                {
-                    printf "$FMT_ERROR" "Something went wrong while setting up git repo."
-                    exit 1
-                }
-                exit 0
-                ;;
-            *)
-                printf "$FMT_MESSAGE" "Cancelled"
-                exit 0
-                ;;
-        esac
+        git_init
     fi
 
     printf "$FMT_MESSAGE" "Pulling repo"

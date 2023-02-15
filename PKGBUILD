@@ -1,7 +1,7 @@
 # Maintainer: Matthias Quintern <matthiasqui@protonmail.com>
 pkgname=config-sync
 pkgver=1.0
-pkgrel=1
+pkgrel=3
 pkgdesc="easily backup and deploy configuration files"
 arch=('any')
 url="https:/github.com/MatthiasQuintern/config-sync"
