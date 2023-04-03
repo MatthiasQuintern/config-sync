@@ -103,6 +103,7 @@ save_configs()
             fi
         fi
     done
+    sudo chown -R ${CS_USER}:${CS_GROUP} $CONFIG_DIR
 }
 
 
@@ -194,6 +195,7 @@ update_configs()
 
         fi
     done
+    sudo chown -R ${CS_USER}:${CS_GROUP} $BACKUP_DIR
 }
 
 
@@ -238,7 +240,9 @@ git_push()
 git_pull()
 {
     if ! check_git_repo; then
-        git_init
+        printf "$FMT_MESSAGE" "No repo found. Cloning remote."
+        git clone $GIT_REPO .
+        return
     fi
 
     printf "$FMT_MESSAGE" "Pulling repo"
@@ -376,7 +380,6 @@ done
 cd $CONFIG_DIR || {
     mkdir -p $CONFIG_DIR
     cd $CONFIG_DIR || {
-
         printf "$FMT_ERROR" "Can not create config dir: $CONFIG_DIR"
         exit 1
     }
