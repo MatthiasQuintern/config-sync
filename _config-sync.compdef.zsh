@@ -2,17 +2,16 @@
 _config-sync()
 {
     _arguments \
-        {--backup,-b}'[Copy dotfiles to \$CONFIG_DIR]' \
-        {--update,-u}'[Copy dotfiles from \$CONFIG_DIR into the system]' \
-        {--all,-a}'[Apply operation to all dotfiles]' \
-        {--exclude,-e}'[ Interpret all given strings as blacklist, not whitelist]' \
-        '--diff[Use vimdiff to merge the file in the filesystem with the new one (applies only to --update)]' \
-        '--git-pull[Pull dotfiles from git repo]' \
-        '--git-push[push dotfiles to git repo]' \
-        '--remote-pull[Pull dotfiles from remote location]' \
-        '--remote-push[push dotfiles to remote location]' \
-        {--settings,-s}'[Show current settings]' \
-        {--help,-h}'[We all need it at times...]' \
+        {-h,--help}'[Show a list of arguments]' \
+        '--settings[Show the current settings]' \
+        {-b,--backup}'[Copy dotfiles to `local` branch and merge into `main`]' \
+        {-u,--update}'[Copy dotfiles to `local`, merge `main` into `local` and copy `local` files into the system]' \
+        {-a,--all}'[Apply operation to all dotfiles]' \
+        {-e,--exclude}'[Interpret all given strings as blacklist, not whitelist]' \
+        '--pull[Pull `main` from a remote repository]' \
+        '--push[Push `main` to a remote repository]' \
+        '-U[`--pull -u --push`]' \
+        '-B[`--pull -b --push`]' \
         '*:file or directory:_files'
 }
 _config-sync $@

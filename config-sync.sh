@@ -4,7 +4,7 @@
 # This software is licensed under the GPL3
 
 # ABOUT
-# Copies all (dot)files listed in user_dotfiles and system_dotfiles to CONFIG_DIR
+# Copies all (dot)files listed in user_dotfiles and system_dotfiles to REPO_DIR
 # If you pass strings as parameters, only dotfiles that contain at least one of the strings are processed.
 
 #
@@ -12,19 +12,34 @@
 #
 FMT_MESSAGE="\e[1;34m%s\e[0m\n"
 FMT_ERROR="\e[1;31mERROR: \e[0m%s\n"
+FMT_GITERROR="\e[1;31mERROR\e[0m while performing a git operation: %s - \e[1;31mmanual intervention might be required\e[0m\n"
 FMT_BACKUP="\e[1;32mBacking Up:\e[0m %s\n"
 FMT_UPDATE="\e[1;33mUpdating:\e[0m %s\n"
 FMT_CONFIG="\e[34m%s\e:\t\e[1;33m%s\e[0m\n"
+error() {
+    printf "$FMT_ERROR" "$@" >&2
+    exit 1
+}
+git_error() {
+    printf "$FMT_GITERROR" "$@" >&2
+    exit 2
+}
+msg() {
+    printf "$FMT_MESSAGE" "$@"
+}
 
 # LOAD SETTINGS
 config_file="$HOME/.config/config-sync.conf"
 if [[ ! -f $config_file ]]; then
-    printf "$FMT_ERROR" "Could not find config file '$config_file'."
-    printf "$FMT_MESSAGE" "You can copy the template from /usr/share/config-sync/ to ~/.config and edit it to your liking."
+    error "Could not find config file '$config_file'."
+    msg "You can copy the template from /usr/share/config-sync/ to ~/.config and edit it to your liking."
     exit 1
 fi
 source $config_file
 
+#
+# FILE COPYING
+#
 INCLUDE=1  # 1: Include mode, 0: exclude mode
 # check if a passed parameter is contained in file
 check_file_in_args()
@@ -49,114 +64,47 @@ check_file_in_args()
 }
 
 
-# check if pwd is root of git repo
-check_git_repo()
-{
-    if [[ -d .git ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-check_rsync()
-{
-    if ! command -v rsync &> /dev/null; then
-        printf "$FMT_ERROR" "rsync is not installed. Please install rsync."
-        exit 1
-    fi
-}
-check_git()
-{
-    if ! command -v git &> /dev/null; then
-        printf "$FMT_ERROR" "git is not installed. Please install git."
-        exit 1
-    fi
-}
-
-#
-# SAVE CONFIGS
-#
-# copy configs from arrays in $CONFIG_DIR
-save_configs()
-{
+_copy_files_to_repo() {
     # make directories 
-    mkdir -p $CONFIG_DIR/home
-    mkdir -p $CONFIG_DIR/etc
+    mkdir -p $REPO_DIR/home
+    mkdir -p $REPO_DIR/etc
 
     for file in "${user_dotfiles[@]}"; do
         if check_file_in_args; then
             printf "$FMT_BACKUP" "$file"
-            rsync -aR $file $CONFIG_DIR/home
+            rsync -aR $file $REPO_DIR/home
         fi
     done
 
     for file in "${system_dotfiles[@]}"; do
         if check_file_in_args; then
             printf "$FMT_BACKUP" "$file"
-            sudo rsync -aR $file $CONFIG_DIR/etc
+            sudo rsync -aR $file $REPO_DIR/etc
 
             # sudoers permissions
             if [[ $file == "/etc/./sudoers" ]]; then
-                printf "$FMT_MESSAGE" "Warning: Making sudoers readable for users (necessary for push/pull, but potential security risk)."
-                sudo chmod a+r $CONFIG_DIR/etc/sudoers
+                msg "Warning: Making sudoers readable for users (necessary for push/pull, but potential security risk)."
+                sudo chmod a+r $REPO_DIR/etc/sudoers
             fi
         fi
     done
-    sudo chown -R ${CS_USER}:${CS_GROUP} $CONFIG_DIR
+    sudo chown -R ${CS_USER}:${CS_GROUP} $REPO_DIR
 }
 
 
-#
-# UPDATE CONFIGS
-#
-update_configs()
-{
+_copy_files_from_repo() {
     mkdir -p $BACKUP_DIR/home &&
     mkdir -p $BACKUP_DIR/etc || {
-        printf "$FMT_ERROR" "Can not create backup directories, exiting now. No installed file will be updated."
+        error "Can not create backup directories, exiting now. No installed file will be updated."
         exit 1
     }
-    if [[ -n $DIFF ]]; then
-        printf "$FMT_MESSAGE" "Diff: Left side: File from \$CONFIG_DIR - Right side: File in place"
-        printf "$FMT_MESSAGE" "Move diffs from left to right using :diffget/:diffpull. [c ]c to jump to next diff." 
-        printf "$FMT_MESSAGE" "Press Enter to continue"
-        read
-    fi
-
-
 
     for file in "${user_dotfiles[@]}"; do
         if check_file_in_args; then
             mkdir -p $(dirname $file)
             file=$(echo $file | sed "s|.*/\./||") # remove ~/./ from the filename
             printf "$FMT_UPDATE" "$file"
-            if [[ -z $DIFF ]]; then
-                rsync -a --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home/$file $HOME/$file
-            else
-                #backup the file in the filesystem
-                rsync $HOME/$file $BACKUP_DIR/home/$(basename $file)
-                if [[ -f "$CONFIG_DIR/home/$file" ]]; then
-                    if [[ -f "$HOME/$file" ]]; then
-                        if [[ -n $(diff $CONFIG_DIR/home/$file $HOME/$file) ]]; then
-                            vimdiff $CONFIG_DIR/home/$file $HOME/$file
-                        fi
-                    else
-                        rsync -a --backup-dir $BACKUP_DIR/home $CONFIG_DIR/home/$file $HOME/$file
-                    fi
-                elif [[ -d "$CONFIG_DIR/home/$file" ]]; then
-                    for sub_dir_file in $(find $CONFIG_DIR/home/$file -type f -print); do
-                        sub_dir_file_in_place=$(echo "$sub_dir_file" | sed "s($CONFIG_DIR/home($HOME/(")
-                        if [[ -f "$sub_dir_file_in_place" ]]; then
-                            if [[ -n $(diff "$sub_dir_file" "$sub_dir_file_in_place") ]]; then
-                                vimdiff "$sub_dir_file" "$sub_dir_file_in_place"
-                            fi
-                        else
-                            rsync -a "$sub_dir_file" "$sub_dir_file_in_place"
-                        fi
-                    done
-                fi
-            fi
+            rsync -a --delete --backup-dir $BACKUP_DIR/home $REPO_DIR/home/$file $HOME/$file
         fi
     done
 
@@ -168,45 +116,19 @@ update_configs()
 
             # sudoers permissions, must come before copying sudoers since sudo doesnt work when owned by user
             if [ $file == "./sudoers" ]; then
-                printf "$FMT_MESSAGE" "Making sudoers in system readable only for root"
-                sudo chmod a-rwx $CONFIG_DIR/etc/sudoers
-                sudo chown root $CONFIG_DIR/etc/sudoers
+                sudo chown root:root $REPO_DIR/etc/sudoers
+                sudo chmod 0600 $REPO_DIR/etc/sudoers
             fi
 
-            if [[ -z $DIFF ]]; then
-                sudo rsync -a --backup-dir $BACKUP_DIR/etc $CONFIG_DIR/etc/$file /etc/$file
-            else
-                #backup the file in the filesystem
-                rsync /etc/$file $BACKUP_DIR/etc/$(basename $file)
-                if [[ -f "$CONFIG_DIR/etc/$file" ]]; then
-                    if [[ -f "/etc/$file" ]]; then
-                        if [[ -n $(diff $CONFIG_DIR/etc/$file /etc/$file) ]]; then
-                            sudo vimdiff $CONFIG_DIR/etc/$file /etc/$file
-                        fi
-                    else
-                        rsync -a $CONFIG_DIR/home/$file $HOME/$file
-                    fi
-                elif [[ -d "$CONFIG_DIR/etc/$file" ]]; then
-                    for sub_dir_file in $(find $CONFIG_DIR/etc/$file -type f -print); do
-                        sub_dir_file_in_place=$(echo "$sub_dir_file" | sed "s($CONFIG_DIR/etc(/etc(")
-                        if [[ -f "$sub_dir_file_in_place" ]]; then
-                            if [[ -n $(diff "$sub_dir_file" "$sub_dir_file_in_place") ]]; then
-                                sudo vimdiff "$sub_dir_file" "$sub_dir_file_in_place"
-                            fi
-                        else
-                            rsync -a "$sub_dir_file" "$sub_dir_file_in_place"
-                        fi
-                    done
-                fi
-
-            fi
+            sudo rsync -a --backup-dir $BACKUP_DIR/etc $REPO_DIR/etc/$file /etc/$file
 
             # change ownership to root
             sudo chown root:root /etc/$file
 
-            # change perm back
+            # change sudoers perms back
             if [ $file == "./sudoers" ]; then
-                sudo chmod a+r $CONFIG_DIR/etc/sudoers
+                # msg "Making sudoers in system readable only for root"
+                sudo chown $CS_USER:$CS_GROUP $REPO_DIR/etc/sudoers
             fi
 
         fi
@@ -215,111 +137,156 @@ update_configs()
 }
 
 
+#
+# SAVE CONFIGS
+#
+# copy configs from arrays in $REPO_DIR
+save_configs()
+{
+    git branch local &> /dev/null
+    git checkout local || git_error "checkout 'local' branch" 
+
+    _copy_files_to_repo
+
+    if [[ $(git status -s | wc -l) -gt 0 ]]; then
+        git add -A
+        git commit -a || error "commit local"
+    fi
+
+    git checkout main || error "checkout 'main' branch"
+
+    git merge local || {
+        git mergetool &&
+        git merge --continue
+    } || error "merging local into main branch"
+}
+
+
+
+#
+# UPDATE CONFIGS
+#
+update_configs() {
+    git branch local &> /dev/null
+    git checkout local || git_error "checkout 'local' branch" 
+
+    _copy_files_to_repo
+
+    git add -A
+    git commit -am "update repo with local files"
+
+    git merge main || {
+        git mergetool &&
+        git merge --continue
+    } || git_error "merging main into local branch"
+
+    _copy_files_from_repo
+}
+
+
+
+#
+# REPO MANAGEMENT
+#
+# check if pwd is root of git repo
+check_git_repo() {
+    if [[ -d .git ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_rsync() {
+    if ! command -v rsync &> /dev/null; then
+        error "rsync is not installed. Please install rsync."
+        exit 1
+    fi
+}
+
+check_git() {
+    if ! command -v git &> /dev/null; then
+        error "git is not installed. Please install git."
+        exit 1
+    fi
+}
+
 git_init() {
-    printf "$FMT_ERROR" "$PWD is not a git repo."
-    read -p "Initialise git repo here? [y/n]: " answer
-    case $answer in
-        y|Y)
-            git init &&
-            git add -A &&
-            git commit -m "initial commit" &&
-            git branch -M $GIT_BRANCH &&
-            printf "$FMT_MESSAGE" "Adding origin: $GIT_REPO" &&
-            git remote add origin $GIT_REPO ||
-            {
-                printf "$FMT_ERROR" "Something went wrong while setting up git repo."
-                exit 1
-            }
-            ;;
-        *)
-            printf "$FMT_MESSAGE" "Cancelled"
-            exit 0
-            ;;
-    esac
-}
-
-git_push()
-{
-    echo $PWD
-    if ! check_git_repo; then
-        git_init
-    fi
-
+    echo -e "# Dotfiles repository\nThis repo is managed by "'`config-sync`' > "README.md"
+    git init --initial-branch main &&
     git add -A &&
-    git commit
-    printf "$FMT_MESSAGE" "Pushing repo" &&
-    git push -u origin $GIT_BRANCH ||
-    printf "$FMT_ERROR" "Something went wrong: Could not push repo."
+    git commit -m "initial commit" || git_error "initializing repo"
+
+    if [ -n "$GIT_REMOTE" ]; then 
+        msg "Adding origin: $GIT_REMOTE" &&
+        git remote add origin "$GIT_REMOTE" || git_error "adding origin '$GIT_REMOTE'"
+    else
+        printf "$FMT_WARNING" "Not adding a remote since '\$GIT_REMOTE' variable is not set. You will have to add one manually if you want to sync to a remote repository."
+    fi
+}
+
+git_push() {
+    msg "Pushing repo" &&
+    git checkout main || git_error "checkout 'main' branch"
+    git push -u origin main || git_error "pushing main branch to origin"
 }
 
 
-git_pull()
-{
-    if ! check_git_repo; then
-        printf "$FMT_MESSAGE" "No repo found. Cloning remote."
-        git clone $GIT_REPO .
-        return
-    fi
-
-    printf "$FMT_MESSAGE" "Pulling repo"
-    git pull ||
-    printf "$FMT_ERROR" "Something went wrong: Could not pull repo."
+git_pull() {
+    msg "Pulling repo"
+    git checkout main || git_error "checkout 'main' branch"
+    git pull origin main || git_error "pulling main branch from origin"
 }
 
 
 #
 # REMOTE SERVER
 #
-remote_push()
-{
-    printf "$FMT_MESSAGE" "Pushing to remote: $REMOTE_DIR"
-    rsync -avu -e "ssh -p $REMOTE_PORT" $CONFIG_DIR/ $REMOTE_DIR ||
-    printf "$FMT_ERROR" "Something went wrong: Could not push to remote."
+remote_push() {
+    msg "Pushing to remote: $REMOTE_DIR"
+    rsync -avu -e "ssh -p $REMOTE_PORT" $REPO_DIR/ $REMOTE_DIR ||
+    error "Something went wrong: Could not push to remote."
 }
 
-remote_pull()
-{
-    printf "$FMT_MESSAGE" "Pulling from remote: $REMOTE_DIR"
-    rsync -avu -e "ssh -p $REMOTE_PORT" $REMOTE_DIR/ $CONFIG_DIR ||
-    printf "$FMT_ERROR" "Something went wrong: Could not pull from remote."
+remote_pull() {
+    msg "Pulling from remote: $REMOTE_DIR"
+    rsync -avu -e "ssh -p $REMOTE_PORT" $REMOTE_DIR/ $REPO_DIR ||
+    error "Something went wrong: Could not pull from remote."
 }
     
 
 #
 # HELP
 #
-show_help()
-{
+show_help() {
     printf "\e[34mFlags:\e[33m
 Argument        Short   Install:\e[0m
 --help          -h      show this
 --settings      -s      show current settings
 
---backup        -b      copy dotfiles to \$CONFIG_DIR
---update        -u      copy dotfiles from \$CONFIG_DIR into the system, current dotfiles are backed up to \$BACKUP_DIR
+--backup        -b      copy dotfiles to \$REPO_DIR
+--update        -u      copy dotfiles from \$REPO_DIR into the system, current dotfiles are backed up to \$BACKUP_DIR
 --all           -a      apply operation to all dotfiles, overrides --exclude
 --exclude       -e      interpret all given strings as blacklist, not whitelist
---diff          -d      use vimdiff to merge the file in the filesystem with the new one (applies only to --update)
 
---git-pull              pull dotfiles from git repo
---git-push              push dotfiles to git repo      
---remote-pull           pull dotfiles from remote location (eg. vps)
---remote-push           push dotfiles to remote location
+--pull                  pull dotfiles from git repo
+--push                  push dotfiles to git repo      
+
+                -U      short for --pull -u
+                -B      short for --pull -b --push
 
 Any argument without a '-' is interpreted as part of a filepath/name and the selected operation will only be applied to files containing the given strings.
-The order for multiple actions is: backup -> git pull/push -> remote pull/push -> update
-Pull/Push operations always affect all the files in the \$CONFIG_DIR, but not the files that are actually installed.
+The order for multiple actions is: pull -> backup -> update -> push
+Pull/Push operations always affect all the files in the \$REPO_DIR, but not the files that are actually installed.
 "
 }
 
 
-show_settings()
-{
+show_settings() {
     printf "\e[1mThe current settings are:\e[0m\n"
-    printf "$FMT_CONFIG" \$CONFIG_DIR "$CONFIG_DIR"
+    printf "$FMT_CONFIG" \$REPO_DIR "$REPO_DIR"
     printf "$FMT_CONFIG" \$BACKUP_DIR "$BACKUP_DIR"
     printf "$FMT_CONFIG" \$GIT_REPO "$GIT_REPO"
-    printf "$FMT_CONFIG" \$GIT_BRANCH "$GIT_BRANCH"
     printf "$FMT_CONFIG" \$REMOTE_DIR "$REMOTE_DIR"
     printf "$FMT_CONFIG" \$REMOTE_PORT "$REMOTE_PORT"
 }
@@ -355,8 +322,18 @@ while (( "$#" )); do
         -b|--backup)
             BACKUP=1
             shift ;;
+        -B)
+            BACKUP=1
+            GIT_PULL=1
+            GIT_PUSH=1
+            shift ;;
         -u|--update)
             UPDATE=1
+            shift ;;
+        -U)
+            UPDATE=1
+            GIT_PULL=1
+            GIT_PUSH=1
             shift ;;
         -a|--all)
             ALL=1
@@ -364,23 +341,14 @@ while (( "$#" )); do
         -e|--exclude)
             INCLUDE=0
             shift ;;
-        -d|--diff)
-            DIFF=1
-            shift;;
-        --git-pull)
+        --pull)
             GIT_PULL=1
             shift ;;
-        --git-push)
+        --push)
             GIT_PUSH=1
             shift ;;
-        --remote-pull)
-            REMOTE_PULL=1
-            shift ;;
-        --remote-push)
-            REMOTE_PUSH=1
-            shift ;;
         -*|--*=) # unsupported flags
-            printf "$FMT_ERROR" "Unsupported flag $1" >&2
+            error "Unsupported flag $1"
             exit 1 ;;
         *) # everything that does not have a - is interpreted as filepath
             FILES="$FILES $1"
@@ -388,42 +356,40 @@ while (( "$#" )); do
     esac
 done
 
+if [ $BACKUP = 1 ] && [ $UPDATE = 1 ]; then
+    error "Invalid arguments: can not backup and update at the same time"
+fi
+
 
 # 
 # RUN THE FUNCTIONS
 #
-# create and cd CONFIG_DIR
-cd $CONFIG_DIR || {
-    mkdir -p $CONFIG_DIR
-    cd $CONFIG_DIR || {
-        printf "$FMT_ERROR" "Can not create config dir: $CONFIG_DIR"
-        exit 1
-    }
+# create and cd REPO_DIR
+cd $REPO_DIR 2>/dev/null || {
+    msg "Creating $REPO_DIR"
+    mkdir -p $REPO_DIR
+    cd $REPO_DIR ||  error "Can not create config dir: $REPO_DIR" 
 }
 
-# order: 
-#  backup - git-push - remote-push - git-pull - remote-pull - update
-if [ $BACKUP = 1 ]; then
-    check_rsync
-    save_configs
+# check if config_dir is a git repo
+if ! check_git_repo; then
+    msg "Initializing git repo in $PWD"
+    git_init
 fi
-if [ $GIT_PUSH = 1 ]; then
-    check_git
-    git_push
-fi
+
+check_git
+check_rsync
+
+# ordered
 if [ $GIT_PULL = 1 ]; then
-    check_git
     git_pull
 fi
-if [ $REMOTE_PUSH = 1 ]; then
-    check_rsync
-    remote_push
-fi
-if [ $REMOTE_PULL = 1 ]; then
-    check_rsync
-    remote_pull
+if [ $BACKUP = 1 ]; then
+    save_configs
 fi
 if [ $UPDATE = 1 ]; then
-    check_rsync
     update_configs
+fi
+if [ $GIT_PUSH = 1 ]; then
+    git_push
 fi

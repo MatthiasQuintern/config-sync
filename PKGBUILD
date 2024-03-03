@@ -1,14 +1,14 @@
-# Maintainer: Matthias Quintern <matthiasqui@protonmail.com>
+# Maintainer: Matthias Quintern <matthias dot quintern at posteo dot de>
 pkgname=config-sync
-pkgver=1.0
-pkgrel=6
-pkgdesc="easily backup and deploy configuration files"
+pkgver=2.0
+pkgrel=1
+pkgdesc="easily backup and synchronize configuration files"
 arch=('any')
 url="https:/github.com/MatthiasQuintern/config-sync"
 license=('GPL3')
 depends=('rsync')
 source=(config-sync.sh _config-sync.compdef.zsh config-sync.1.man config-sync.conf)
-md5sums=(833ed06c2401b2240a037a116269a460 ca58dacf1b7e04a778ac43f007ca34de fdaefe9cffa01195cfded7eba9f061c2 cfad8c606738bc9161f0f1d19d71e3b8)
+sha256sums=(aacd7f930612ac964bc744c96827451a250c6140f32caae76f6ff806843e1baa 77ca19f9270007d8689fc634ba4a0bca34f4966eba7a3f1dfcc89fa88fb4f270 ea726ce29003583c28fe63a36356e80cd3be0f84750004fa27170d637de7d43b 3b6ddad2f3037dad57fdedfe808fe26deb333011cdeb5d1b35be88d6fadb0a19)
 
 package() {
 	mkdir -p "${pkgdir}/usr/bin"
